@@ -1,4 +1,4 @@
-MiniWebServer (C)2012-2014 Bo Zimmerman
+CoffeeWebServer (C)2012-2014 Bo Zimmerman
 Please read the LICENSE file for license information
 Please read the NOTICE file for credits information
 Please finish reading this document (README)
@@ -8,7 +8,7 @@ has an INI FILE documentation system.
 
 Informational web sites:
 Sourceforge release site:     http://sourceforge.net/projects/miniwebserver
-
+GitHub release site: http://github.com/bozimmerman/CoffeeWebServer
 
 DIRECTORIES:
 src               : miniwebserver source and "binaries"
@@ -23,12 +23,12 @@ TO BUILD:
 2. Download and install Apache Maven http://maven.apache.org/
 3. CD to root directory and enter:
 	mvn package
-	(binaries will be in target\classes and target\MiniWebServe-?.?.jar)
+	(binaries will be in target\classes and target\CoffeeWebServe-?.?.jar)
 
 TO RUN:
 1. Build
-2. Copy target\MiniWebServe-?.?.jar into the root install directory
-3. enter java -jar MiniWebServe-?.?.jar
+2. Copy target\CoffeeWebServe-?.?.jar into the root install directory
+3. enter java -jar CoffeeWebServe-?.?.jar
 
 TO PLAY WITH:
 1. Build and Run
@@ -98,19 +98,19 @@ TO EMBED:
 2. Setup your own java Logger class, or use the built one.
     import com.planet_ink.util.logging.Log;
     ...
-    Log.instance().startLogFiles("miniweb", 2);
+    Log.instance().startLogFiles("web", 2);
     Log.instance().setLogOutput("BOTH", "BOTH", "BOTH", "BOTH", "OFF", "OFF", "OFF");
 2. Code this to initialize your configuration:
     import com.planet_ink.util.logging.Log;
-    import com.planet_ink.miniweb.server.MiniWebServer;
-    import com.planet_ink.miniweb.util.MiniWebConfig;
+    import com.planet_ink.coffee_web.server.WebServer;
+    import com.planet_ink.coffee_web.util.CWConfig;
     ...
-    MiniWebConfig config=new MiniWebConfig();
-    MiniWebServer.initConfig(config, Log.instance(), propStream);
+    CWConfig config=new CWConfig();
+    WebServer.initConfig(config, Log.instance(), propStream);
 3. Start the web server:
-    import com.planet_ink.miniweb.server.MiniWebServer;
+    import com.planet_ink.coffee_web.server.WebServer;
     ...
-    MiniWebServer webServer=new MiniWebServer("My Mini Web Server!",config);
-    config.setMiniWebServer(webServer);
+    WebServer webServer=new WebServer("My Web Server!",config);
+    config.setCoffeeWebServer(webServer);
     webServer.start();
 4. Enjoy -- it's running!
