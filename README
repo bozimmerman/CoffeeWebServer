@@ -100,17 +100,17 @@ TO EMBED:
     ...
     Log.instance().startLogFiles("web", 2);
     Log.instance().setLogOutput("BOTH", "BOTH", "BOTH", "BOTH", "OFF", "OFF", "OFF");
-2. Code this to initialize your configuration:
+3. Code this to initialize your configuration:
     import com.planet_ink.util.logging.Log;
     import com.planet_ink.coffee_web.server.WebServer;
     import com.planet_ink.coffee_web.util.CWConfig;
     ...
     CWConfig config=new CWConfig();
     WebServer.initConfig(config, Log.instance(), propStream);
-3. Start the web server:
+4. Start the web server:
     import com.planet_ink.coffee_web.server.WebServer;
     ...
     WebServer webServer=new WebServer("My Web Server!",config);
     config.setCoffeeWebServer(webServer);
     webServer.start();
-4. Enjoy -- it's running!
+5 . Enjoy -- it's running!
