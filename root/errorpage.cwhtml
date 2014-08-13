@@ -6,7 +6,7 @@
 		
 	</head>
 	<body>
-		<IMG SRC="/images/miniweb.jpg" WIDTH=60 HEIGHT=60 ALT="" BORDER="0" align="left" hspace="20" vspace="2">
+		<IMG SRC="/images/coffeeweb.jpg" WIDTH=60 HEIGHT=60 ALT="" BORDER="0" align="left" hspace="20" vspace="2">
 		<h2>@HTTPSTATUS@</h2>
 
 		@HTTPSTATUSINFO@<br>
