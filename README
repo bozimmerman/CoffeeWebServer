@@ -91,10 +91,10 @@ EXTRA OPTIONAL FEATURES IMPLEMENTED:
 
 ----------------------------------------------------------------------------------------
 TO EMBED:
-1. Setup your custom mw.ini or prepare a java inputstream of text equivalent to an mw.ini:
+1. Setup your custom coffeeweb.ini or prepare a java inputstream of text equivalent to an coffeeweb.ini:
     import java.io.FileInputStream;
     ...
-    FileInputStream propStream = new FileInputStream(new File("mymw.ini"));
+    FileInputStream propStream = new FileInputStream(new File("mycoffeeweb.ini"));
 2. Setup your own java Logger class, or use the built one.
     import com.planet_ink.util.logging.Log;
     ...
