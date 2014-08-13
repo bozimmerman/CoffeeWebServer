@@ -23,12 +23,12 @@ TO BUILD:
 2. Download and install Apache Maven http://maven.apache.org/
 3. CD to root directory and enter:
 	mvn package
-	(binaries will be in target\classes and target\CoffeeWebServe-?.?.jar)
+	(binaries will be in target\classes and target\CoffeeWebServer-?.?.jar)
 
 TO RUN:
 1. Build
-2. Copy target\CoffeeWebServe-?.?.jar into the root install directory
-3. enter java -jar CoffeeWebServe-?.?.jar
+2. Copy target\CoffeeWebServer-?.?.jar into the root install directory
+3. enter java -jar CoffeeWebServer-?.?.jar
 
 TO PLAY WITH:
 1. Build and Run
