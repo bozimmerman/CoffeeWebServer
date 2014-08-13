@@ -1,0 +1,21 @@
+* Support chunked encoding input
+
+* Add directory browsing
+
+* Cache directives (Pragma: no-cache, and Cache-Control: no-cache)
+
+* Referer directives to improve forward /context functionality
+
+* Other headers at http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+  - Accept-Charset, Accept-Language, Content-Language
+  - Age
+  - Authorization, see also  WWW-Authenticate
+  - Content-Location (with all MW redirection abilities, this could be useful...)
+  - Content-MD5
+  - If-Match
+  - If-Range
+  - If-Unmodified-Since
+  - Max-Forwards (requires implementation of TRACE? OPTIONS?)
+
+* Expect should return a 417 if something other than 100-continue is given
+

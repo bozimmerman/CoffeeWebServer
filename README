@@ -1,0 +1,116 @@
+MiniWebServer (C)2012-2014 Bo Zimmerman
+Please read the LICENSE file for license information
+Please read the NOTICE file for credits information
+Please finish reading this document (README)
+
+After that open up the mw.ini file and start reading.  MiniWebServer
+has an INI FILE documentation system.
+
+Informational web sites:
+Sourceforge release site:     http://sourceforge.net/projects/miniwebserver
+
+
+DIRECTORIES:
+src               : miniwebserver source and "binaries"
+keys	          : example fake invalid self-rolled ssl keys
+root              : default html documents root
+tests             : Some JUNIT tests for the web server
+target            : You must have already built this thing with Maven, congratz!
+
+----------------------------------------------------------------------------------------
+TO BUILD:
+1. Download and install a Java JDK 1.6 or better
+2. Download and install Apache Maven http://maven.apache.org/
+3. CD to root directory and enter:
+	mvn package
+	(binaries will be in target\classes and target\MiniWebServe-?.?.jar)
+
+TO RUN:
+1. Build
+2. Copy target\MiniWebServe-?.?.jar into the root install directory
+3. enter java -jar MiniWebServe-?.?.jar
+
+TO PLAY WITH:
+1. Build and Run
+2. point browser at http://localhost/
+3. point browser at http://localhost/formdata.html
+	(this is for testing FormTesterServlet and multipart form parsing)
+4. point browser at http://localhost/filestest.html with a browser
+	(this is for testing MultipartFileWriter servlet and multipart form parsing)
+5. point browser at http://localhost/ranged.txt with a Header of "Range: bytes=0-2,3-4,2-4"
+   (this is for testing ranged requests)
+6. point browser at https://localhost
+   (this is for testing SSL)
+7. point browser at http://localhost/helloworld
+   (this is for testing HelloWorldServlet)
+8. point browser at http://localhost/helloworld
+   (this is for testing HelloWorldServlet)
+9. point browser at http://localhost/log
+   (this is for testing LogDumperServlet)
+9. point browser at http://localhost/session
+   (this is for testing cookie-based sessions)
+10.point browser at http://localhost/stats
+   (this is for testing servlet statistics)
+
+----------------------------------------------------------------------------------------
+FEATURES:
+1. Multiple concurrent connections
+2. Support for arbitrary files in directory where server was started
+3. Sample Servlets provided
+4. Basic Servlet statistics
+5. Basic HTTP/1.1 that works with IE, Firefox, chrome, wget, others?
+6. Basic HTTP error handling for invalid and malformed requests
+7. Proper I/O and thread resource management .. memory is mostly left to the VM. :)
+
+OPTIONAL FEATURES IMPLEMENTED:
+1. Servlet Session support
+	(though this is of little proper use without a built-in auth system)
+2. Cookie support for servlets -- sessions are cookie based, in fact
+3. GZIP output encoding support
+4. File Caching supported 
+	(with memory usage caps and timeouts enforced by the cache)
+5. Range support for file serving
+6. POST support
+	(this was trivial, so I also did more stuff around this .. see next section)
+7. HTTP/1.1 Keep-Alive/Persistent connections
+    (did more with this too -- see below)
+8. SSL Support 
+    (I provided a sample KeyStore in the files directory -- I hope that doesn't count 
+     as external configuration. )
+9. NIO/nonblocking implementation
+
+EXTRA OPTIONAL FEATURES IMPLEMENTED:
+1. DEFLATE output encoding support (for Chrome at least -- I.E. doesn't like it one bit)
+2. MIME type support that enforces Accept headers
+3. Full support for the HEAD method
+4. Multi-Part form support, including embedded multi-parts
+5. Url-Encoded body/Url-Endoded Part support
+6. Form-Data body/Form-data Part support
+7. Support for Multi-Part variables, w/ special care to Files
+8. Pipe-Lined Request support
+
+----------------------------------------------------------------------------------------
+TO EMBED:
+1. Setup your custom mw.ini or prepare a java inputstream of text equivalent to an mw.ini:
+    import java.io.FileInputStream;
+    ...
+    FileInputStream propStream = new FileInputStream(new File("mymw.ini"));
+2. Setup your own java Logger class, or use the built one.
+    import com.planet_ink.util.logging.Log;
+    ...
+    Log.instance().startLogFiles("miniweb", 2);
+    Log.instance().setLogOutput("BOTH", "BOTH", "BOTH", "BOTH", "OFF", "OFF", "OFF");
+2. Code this to initialize your configuration:
+    import com.planet_ink.util.logging.Log;
+    import com.planet_ink.miniweb.server.MiniWebServer;
+    import com.planet_ink.miniweb.util.MiniWebConfig;
+    ...
+    MiniWebConfig config=new MiniWebConfig();
+    MiniWebServer.initConfig(config, Log.instance(), propStream);
+3. Start the web server:
+    import com.planet_ink.miniweb.server.MiniWebServer;
+    ...
+    MiniWebServer webServer=new MiniWebServer("My Mini Web Server!",config);
+    config.setMiniWebServer(webServer);
+    webServer.start();
+4. Enjoy -- it's running!

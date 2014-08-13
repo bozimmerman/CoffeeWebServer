@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.planet_ink.coffee_web</groupId>
+  <artifactId>CoffeeWebServer</artifactId>
+  <packaging>jar</packaging>
+  <version>2.1</version>
+  <name>CoffeeWebServer</name>
+  <url>http://www.coffeemud.org</url>
+  <build>
+<plugins>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+  </plugin>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-eclipse-plugin</artifactId>
+  </plugin>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+      <archive>
+        <manifest>
+          <mainClass>com.planet_ink.coffee_web.server.WebServer</mainClass>
+        </manifest>
+      </archive>
+    </configuration>
+  </plugin>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+  </plugin>
+</plugins>
+    <sourceDirectory>${project.basedir}/src</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
+     <testOutputDirectory>target/test-classes</testOutputDirectory>
+    <directory>target</directory>
+    <outputDirectory>target/classes</outputDirectory>
+</build>
+  <dependencies>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-client</artifactId>
+        <version>1.13</version>
+      </dependency>
+      <dependency>
+      	<groupId>junit</groupId>
+	<artifactId>junit</artifactId>
+	<version>4.10</version>
+	<type>jar</type>
+	<optional>false</optional>
+    </dependency>
+</dependencies>
+</project>
