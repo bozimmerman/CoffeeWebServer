@@ -3,7 +3,7 @@ Please read the LICENSE file for license information
 Please read the NOTICE file for credits information
 Please finish reading this document (README)
 
-After that open up the mw.ini file and start reading.  MiniWebServer
+After that open up the coffeeweb.ini file and start reading.  CoffeeWebServer
 has an INI FILE documentation system.
 
 Informational web sites:
@@ -11,7 +11,7 @@ Sourceforge release site:     http://sourceforge.net/projects/miniwebserver
 GitHub release site: http://github.com/bozimmerman/CoffeeWebServer
 
 DIRECTORIES:
-src               : miniwebserver source and "binaries"
+src               : coffeewebserver source and "binaries"
 keys	          : example fake invalid self-rolled ssl keys
 root              : default html documents root
 tests             : Some JUNIT tests for the web server
@@ -37,7 +37,7 @@ TO PLAY WITH:
 	(this is for testing FormTesterServlet and multipart form parsing)
 4. point browser at http://localhost/filestest.html with a browser
 	(this is for testing MultipartFileWriter servlet and multipart form parsing)
-5. point browser at http://localhost/ranged.txt with a Header of "Range: bytes=0-2,3-4,2-4"
+5. point browser at http://localhost/ranged.txt with a Header of "Range: bytes=0-2"
    (this is for testing ranged requests)
 6. point browser at https://localhost
    (this is for testing SSL)
@@ -88,6 +88,9 @@ EXTRA OPTIONAL FEATURES IMPLEMENTED:
 6. Form-Data body/Form-data Part support
 7. Support for Multi-Part variables, w/ special care to Files
 8. Pipe-Lined Request support
+9. Chunked encoding
+10.Output throttling
+11.Access logs
 
 ----------------------------------------------------------------------------------------
 TO EMBED:
