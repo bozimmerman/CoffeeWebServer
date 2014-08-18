@@ -99,7 +99,7 @@ TO EMBED:
     ...
     FileInputStream propStream = new FileInputStream(new File("mycoffeeweb.ini"));
 2. Setup your own java Logger class, or use the built one.
-    import com.planet_ink.util.logging.Log;
+    import com.planet_ink.coffee_common.logging.Log;
     ...
     Log.instance().startLogFiles("web", 2);
     Log.instance().setLogOutput("BOTH", "BOTH", "BOTH", "BOTH", "OFF", "OFF", "OFF");
