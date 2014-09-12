@@ -1,7 +1,7 @@
 2014-?-?   2.2 Bo Zimmerman <bo@zimmers.net>
 
     * Support for output throttling added, ini file configured.
-    * Support for chunked encoding output added, ini file configured.
+    * Support for chunked encoding input and output added, ini file configured.
 
 2014-4-09  2.1 Bo Zimmerman <bo@zimmers.net>
 

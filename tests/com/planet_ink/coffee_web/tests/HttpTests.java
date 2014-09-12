@@ -1,11 +1,16 @@
 package com.planet_ink.coffee_web.tests;
 import static org.junit.Assert.*;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +51,7 @@ public class HttpTests
 		config.setLogger(Log.instance());
 		CWThreadExecutor executor = new CWThreadExecutor("test", config, 25, 25, 25, TimeUnit.SECONDS, 10, 100000);
 		final AtomicInteger failures=new AtomicInteger(0);
-		int numRequests=1000;
+		int numRequests=100;
 		final Hashtable <Thread,Client> clients=new Hashtable<Thread,Client>();
 		for(int i=0;i<numRequests;i++)
 			executor.execute(new Runnable(){
@@ -452,4 +457,60 @@ public class HttpTests
 		}
 	}
 	
+	
+	@Test
+	public void chunkedPostTest()
+	{
+		try
+		{
+			final String map="0123456789abcdefghijklmnopqrstuvwxyz~`!@#$%^&*()_-+=[{]}\\|;:'\",<.>/?";
+			final byte[] body=new byte[62200];
+			for(int b=0;b<body.length;b++)
+				body[b]=(byte)map.charAt(b % map.length());
+			ByteArrayOutputStream results=new ByteArrayOutputStream();
+			results.write(HelloWorldServlet.helloResponseStart.getBytes());
+			results.write(body);
+			results.write(HelloWorldServlet.helloResponseEnd.getBytes());
+			
+			Socket socket=new Socket("localhost",8080);
+			OutputStream out=new BufferedOutputStream(socket.getOutputStream());
+			InputStream in=new BufferedInputStream(socket.getInputStream());
+			out.write("POST /helloworld HTTP/1.1\r\n".getBytes());
+			out.write("Connection: close\r\n".getBytes());
+			out.write("Accept: text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2\r\n".getBytes());
+			out.write("Host: localhost:8080\r\n".getBytes());
+			out.write("X-DynamicPost: true".getBytes());
+			out.write("User-agent: Java/1.7.0_51\r\n".getBytes());
+			out.write("Transfer-Encoding: chunked\r\n".getBytes());
+			out.write("\r\n".getBytes());
+			for(int i=0;i<body.length;i+=4098)
+			{
+				int rem=body.length-i;
+				int len=(rem < 4098) ? rem : 4098; 
+				out.write((Integer.toHexString(len)+"\r\n").getBytes());
+				out.write(body,i,len);
+				out.write("\r\n".getBytes());
+				out.flush();
+			}
+			out.write("0\r\n\r\n".getBytes());
+			out.flush(); // and that's all she wrote!
+			int c;
+			ByteArrayOutputStream bout=new ByteArrayOutputStream();
+			while((c=in.read())>=0)
+				bout.write(c);
+			socket.close();
+			String s1=new String(bout.toByteArray());
+			int x=s1.indexOf("\r\n\r\n");
+			if(x>0)
+				s1=s1.substring(x+4);
+			String s2=new String(results.toByteArray());
+			if(!s1.equalsIgnoreCase(s2))
+				fail("FAIL: Incorrect data returned.");
+		}
+		catch (Exception e)
+		{
+			fail("FAIL: "+e.getMessage());
+			e.printStackTrace(System.err);
+		}
+	}
 }
