@@ -2,6 +2,7 @@
 
     * Support for output throttling added, ini file configured.
     * Support for chunked encoding input and output added, ini file configured.
+    * Directories can now be browsed according to ini file configuration
 
 2014-4-09  2.1 Bo Zimmerman <bo@zimmers.net>
 
