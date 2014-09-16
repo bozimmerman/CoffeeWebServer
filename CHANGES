@@ -1,4 +1,4 @@
-2014-?-?   2.2 Bo Zimmerman <bo@zimmers.net>
+2014-9-16   2.2 Bo Zimmerman <bo@zimmers.net>
 
     * Support for output throttling added, ini file configured.
     * Support for chunked encoding input and output added, ini file configured.
