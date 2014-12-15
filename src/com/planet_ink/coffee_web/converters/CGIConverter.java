@@ -121,22 +121,20 @@ public class CGIConverter implements HTTPOutputConverter
 			final Process process = builder.start();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();
 			final InputStream in = process.getInputStream();
-			int b=in.read();
-			while(b != -1)
+			byte[] bytes = new byte[1024];
+			int len;
+			while ((len = in.read(bytes)) != -1) 
 			{
-				bout.write(b);
-				b=in.read();
+				bout.write(bytes, 0, len);
 			}
 			int retCode = process.waitFor();
 			if(retCode != 0)
 			{
 				final InputStream errin = process.getErrorStream();
 				StringBuilder errMsg = new StringBuilder("");
-				b=errin.read();
-				while(b != -1)
+				while ((len = errin.read(bytes)) != -1) 
 				{
-					errMsg.append((char)b);
-					b=errin.read();
+					errMsg.append(new String(bytes,0,len));
 				}
 				Log.errOut(errMsg.toString());
 			}
