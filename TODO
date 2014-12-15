@@ -1,4 +1,8 @@
-PHP Support? 
+* If-Match
+
+* If-Range
+
+* If-Unmodified-Since
 
 * Cache directives (Pragma: no-cache, and Cache-Control: no-cache)
 
@@ -10,9 +14,6 @@ PHP Support?
   - Authorization, see also  WWW-Authenticate
   - Content-Location (with all MW redirection abilities, this could be useful...)
   - Content-MD5
-  - If-Match
-  - If-Range
-  - If-Unmodified-Since
   - Max-Forwards (requires implementation of TRACE? OPTIONS?)
 
 * Expect should return a 417 if something other than 100-continue is given

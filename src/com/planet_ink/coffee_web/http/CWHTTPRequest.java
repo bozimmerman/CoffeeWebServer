@@ -70,6 +70,7 @@ public class CWHTTPRequest implements HTTPRequest
 	private String 	 			 	requestString	= null;		// full request line, including method, path, etc..
 	private final Map<String,String>headers	  		= new Hashtable<String,String>(); // all the base headers received for this request
 	private Map<String,String>   	urlParameters	= null;   	// holds url parameters, urlencoded variables, and form-data variables
+	private String					queryString		= null; 	// holds url parameters pre-parsed -- the stuff after the ?
 	private ByteBuffer	 		 	buffer;	  					// acts as both the line buffer and data buffer
 	private int					 	bodyLength		= 0;		// length of the data buffer, and flag that a body was received
 	private float				 	httpVer	  		= 1.0f;		// version of this http request (1.0, 1.1, etc)
@@ -1011,10 +1012,14 @@ public class CWHTTPRequest implements HTTPRequest
 			if(urlEncodeSeparator >= 0)
 			{
 				uriPage = URLDecoder.decode(url.substring(0,urlEncodeSeparator),"UTF-8");
-				parseUrlEncodedKeypairs(url.substring(urlEncodeSeparator+1));
+				queryString = url.substring(urlEncodeSeparator+1);
+				parseUrlEncodedKeypairs(queryString);
 			}
 			else
+			{
 				uriPage = URLDecoder.decode(url,"UTF-8");
+				queryString = "";
+			}
 		}
 		catch(final UnsupportedEncodingException e)
 		{
@@ -1068,6 +1073,16 @@ public class CWHTTPRequest implements HTTPRequest
 	public String getCookie(String name)
 	{
 		return cookies.get(name);
+	}
+
+	/**
+	 * Return the query string, all the stuff in the request after the ?
+	 * @return the query string
+	 */
+	@Override
+	public String getQueryString()
+	{
+		return queryString;
 	}
 
 	/**

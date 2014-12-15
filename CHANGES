@@ -1,21 +1,32 @@
+2015-?-??   2.3 Bo Zimmerman <bo@zimmers.net>
+    *. Support for CGIs.  Tested with Mediawiki for PHP
+
 2014-9-16   2.2 Bo Zimmerman <bo@zimmers.net>
 
     * Support for output throttling added, ini file configured.
+
     * Support for chunked encoding input and output added, ini file configured.
+
     * Directories can now be browsed according to ini file configuration
 
 2014-4-09  2.1 Bo Zimmerman <bo@zimmers.net>
 
     * Fix to content-range response
+
     * Other Minor bug fixes
+
     * Support for files > 2gig
+
     * Expanded converters and file manager to give them more flexibility
+
     * New mw.ini option for disabling certain features (ranged only right now)
 
 2013-7-20  2.0 Bo Zimmerman <bo@zimmers.net>
 
     * More bug fixes and performance enhancements
+
     * Support for access logs
+
     * Support for Connection: close header
     
 2013-2-28  1.9 Bo Zimmerman <bo@zimmers.net>

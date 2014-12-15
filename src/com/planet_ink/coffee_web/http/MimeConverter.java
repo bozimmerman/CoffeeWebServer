@@ -26,7 +26,7 @@ limitations under the License.
 */
 
 /**
- * Manages a relatively static set of servlet classes 
+ * Manages a relatively static set of converter classes 
  * and the root contexts needed to access them.
  * 
  * @author Bo Zimmerman
@@ -34,8 +34,8 @@ limitations under the License.
  */
 public class MimeConverter implements MimeConverterManager
 {
-	private final Map<MIMEType,Class<? extends HTTPOutputConverter>> 	  	converters; 	// map of registered servlets by context
-	private final Map<Class<? extends HTTPOutputConverter>, RequestStats> requestStats; // stats about each servlet
+	private final Map<MIMEType,Class<? extends HTTPOutputConverter>> 	  converters; 	// map of registered converters by context
+	private final Map<Class<? extends HTTPOutputConverter>, RequestStats> requestStats; // stats about each converter
 	
 	/**
 	 * Construct a mime config manager, loading the converters from the config given

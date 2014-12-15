@@ -2,7 +2,6 @@ package com.planet_ink.coffee_web.interfaces;
 
 import java.util.Collection;
 
-import com.planet_ink.coffee_web.http.MIMEType;
 import com.planet_ink.coffee_web.util.RequestStats;
 
 /*
@@ -22,41 +21,41 @@ limitations under the License.
 */
 
 /**
- * Interface for an http response converter manager, based on the mime type 
+ * Interface for an http response converter manager, based on the extension 
  * of the file returned.
  * 
  * @author Bo Zimmerman
  *
  */
-public interface MimeConverterManager
+public interface CGIConverterManager
 {
 	/**
-	 * Internal method to register a converters existence, and its context.
-	 * @param mime the mime type the converter responds to
-	 * @param converterClass the class of the converter
+	 * Internal method to register a converter existence, and its mime type.
+	 * @param extension the extension the cgi converter responds to
+	 * @param converterObject the converter
 	 */
-	public void registerConverter(MIMEType mime, Class<? extends HTTPOutputConverter> converterClass);
+	public void registerConverter(String extension, HTTPOutputConverter converterObject);
 	
 	/**
-	 * For anyone externally interested, will return the list of converter classes
+	 * For anyone externally interested, will return the list of converter objects
 	 * that are registered
-	 * @return the list of converter classes
+	 * @return the list of converter objects
 	 */
-	public Collection<Class<? extends HTTPOutputConverter>> getConverters();
+	public Collection<HTTPOutputConverter> getConverters();
 
 	/**
-	 * Returns a converter (if any) that handles the given mime type.
+	 * Returns a converter (if any) that handles the given extension.
 	 * if none is found, NULL is returned.
-	 * @param mime the mime type
-	 * @return the converter class, if any, or null
+	 * @param extension the extension
+	 * @return the converter object, if any, or null
 	 */
-	public Class<? extends HTTPOutputConverter> findConverter(MIMEType mime);
+	public HTTPOutputConverter findConverter(String extension);
 
 	/**
 	 * Returns a statistics object for the given converter class
 	 * or null if none exists
-	 * @param converterClass the converter class managed by this web server
+	 * @param converterObject the converter object managed by this web server
 	 * @return the converter stats object
 	 */
-	public RequestStats getConverterStats(Class<? extends HTTPOutputConverter> converterClass);
+	public RequestStats getConverterStats(Class<? extends HTTPOutputConverter> converterObject);
 }

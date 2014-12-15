@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.planet_ink.coffee_web.http.MIMEType;
+import com.planet_ink.coffee_web.interfaces.CGIConverterManager;
 import com.planet_ink.coffee_web.interfaces.FileCacheManager;
 import com.planet_ink.coffee_web.interfaces.FileManager;
 import com.planet_ink.coffee_web.interfaces.HTTPFileGetter;
@@ -86,7 +87,8 @@ public class CWConfig implements Cloneable
 	private static final Integer  ALL_PORTS						= Integer.valueOf(-1);
 	private static final String   ALL_HOSTS						= "";
 	
-	private Map<String,String> 	  servlets 						= new HashMap<String,String>();
+	private Map<String,String>	  servlets 						= new HashMap<String,String>();
+	private Map<String,String>	  cgis							= new HashMap<String,String>();
 	private Map<String,String>	  fileConverts					= new HashMap<String,String>();
 	
 	private Map<String,String> 	  miscFlags						= new HashMap<String,String>();
@@ -95,6 +97,7 @@ public class CWConfig implements Cloneable
 	private SimpleServletManager  servletMan					= null;
 	private ServletSessionManager sessions						= null;
 	private MimeConverterManager  converters					= null;
+	private CGIConverterManager   cgiConverters					= null;
 	private FileCacheManager	  fileCache						= null;
 	private Logger				  logger						= null;
 	private HTTPFileGetter		  fileGetter					= null;
@@ -314,6 +317,7 @@ public class CWConfig implements Cloneable
 	{
 		return fileGetter;
 	}
+	
 	/**
 	 * @param fileGetter the fileGetter to set
 	 */
@@ -321,6 +325,7 @@ public class CWConfig implements Cloneable
 	{
 		this.fileGetter = fileGetter;
 	}
+	
 	/**
 	 * @return the coffeeWebServer
 	 */
@@ -328,6 +333,7 @@ public class CWConfig implements Cloneable
 	{
 		return coffeeWebServer;
 	}
+	
 	/**
 	 * @param coffeeWebServer the coffeeWebServer to set
 	 */
@@ -384,6 +390,7 @@ public class CWConfig implements Cloneable
 	{
 		return sessions;
 	}
+
 	/**
 	 * @param sessions the sessions to set
 	 */
@@ -391,6 +398,7 @@ public class CWConfig implements Cloneable
 	{
 		this.sessions = sessions;
 	}
+
 	/**
 	 * @return the converters
 	 */
@@ -398,6 +406,7 @@ public class CWConfig implements Cloneable
 	{
 		return converters;
 	}
+
 	/**
 	 * @param converters the converters to set
 	 */
@@ -405,6 +414,23 @@ public class CWConfig implements Cloneable
 	{
 		this.converters = converters;
 	}
+	
+	/**
+	 * @return the cgiConverters
+	 */
+	public CGIConverterManager getCgiConverters() 
+	{
+		return cgiConverters;
+	}
+
+	/**
+	 * @param cgiConverters the cgiConverters to set
+	 */
+	public void setCgiConverters(CGIConverterManager cgiConverters) 
+	{
+		this.cgiConverters = cgiConverters;
+	}
+
 	/**
 	 * @return the bindAddress
 	 */
@@ -412,6 +438,7 @@ public class CWConfig implements Cloneable
 	{
 		return bindAddress;
 	}
+	
 	/**
 	 * @param bindAddress the bindAddress to set
 	 */
@@ -932,6 +959,7 @@ public class CWConfig implements Cloneable
 	{
 		return requestMaxPerConn;
 	}
+	
 	/**
 	 * @param requestMaxPerConn the requestMaxPerConn to set
 	 */
@@ -939,6 +967,7 @@ public class CWConfig implements Cloneable
 	{
 		this.requestMaxPerConn = requestMaxPerConn;
 	}
+	
 	/**
 	 * @return the servlets
 	 */
@@ -946,6 +975,15 @@ public class CWConfig implements Cloneable
 	{
 		return servlets;
 	}
+	
+	/**
+	 * @return the cgis
+	 */
+	public final Map<String, String> getCGIs()
+	{
+		return cgis;
+	}
+	
 	/**
 	 * @return the fileConverts
 	 */
@@ -1373,6 +1411,9 @@ public class CWConfig implements Cloneable
 			}
 		}
 		
+		final Map<String,String> cgiEntries=getPrefixedPairs(props,"CGICONVERT",'/');
+		if(cgiEntries != null)
+			cgis=cgiEntries;
 		final Map<String,String> newServlets=getPrefixedPairs(props,"SERVLET",'/');
 		if(newServlets != null)
 			servlets=newServlets;
