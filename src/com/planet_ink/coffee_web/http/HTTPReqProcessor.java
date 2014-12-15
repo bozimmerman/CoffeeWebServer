@@ -472,6 +472,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			}
 			catch(final ParseException e) { }
 			catch(final NumberFormatException e) { }
+			catch(final ArrayIndexOutOfBoundsException e) { }
 		}
 	}
 	
