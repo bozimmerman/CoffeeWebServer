@@ -15,7 +15,6 @@ import java.io.*;
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.server.WebServer;
-import com.planet_ink.coffee_web.util.ChunkSpec;
 import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.ThrottleSpec;
 import com.planet_ink.coffee_web.util.WebAddress;

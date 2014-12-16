@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -63,6 +64,7 @@ public class CGIConverter implements HTTPOutputConverter
 		SERVER_PORT,
 		SERVER_PROTOCOL,
 		SERVER_SOFTWARE, 
+		REDIRECT_STATUS
 	}
 	
 	
@@ -100,15 +102,16 @@ public class CGIConverter implements HTTPOutputConverter
 		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"");
 		env.put(EnvironmentVariables.QUERY_STRING.name(),request.getQueryString());
 		env.put(EnvironmentVariables.REMOTE_ADDR.name(),request.getClientAddress().toString());
-		env.put(EnvironmentVariables.REMOTE_HOST.name(),null);
-		env.put(EnvironmentVariables.REMOTE_IDENT.name(),null);
-		env.put(EnvironmentVariables.REMOTE_USER.name(),null);
+		//env.put(EnvironmentVariables.REMOTE_HOST.name(),null);
+		//env.put(EnvironmentVariables.REMOTE_IDENT.name(),null);
+		//env.put(EnvironmentVariables.REMOTE_USER.name(),null);
 		env.put(EnvironmentVariables.REQUEST_METHOD.name(),request.getMethod().toString());
 		env.put(EnvironmentVariables.SCRIPT_NAME.name(),request.getUrlPath());
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_PROTOCOL.name(),"HTTP/"+request.getHttpVer());
 		env.put(EnvironmentVariables.SERVER_SOFTWARE.name(),WebServer.NAME);
+		env.put(EnvironmentVariables.REDIRECT_STATUS.name(),"200");
 		for(HTTPHeader header : HTTPHeader.values())
 		{
 			final String value=request.getHeader(header.name());
@@ -118,16 +121,34 @@ public class CGIConverter implements HTTPOutputConverter
 		try 
 		{
 			builder.redirectError(Redirect.PIPE);
+			builder.redirectOutput(Redirect.PIPE);
+			builder.redirectInput(Redirect.PIPE);
 			final Process process = builder.start();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();
 			final InputStream in = process.getInputStream();
+			final OutputStream out = process.getOutputStream();
 			byte[] bytes = new byte[1024];
 			int len;
+StringBuilder str=new StringBuilder("");
+			while(buffer.remaining() > 0)
+			{
+				len = buffer.remaining() >= bytes.length ? bytes.length : buffer.remaining();
+				buffer.get(bytes,0,len);
+str.append(new String(bytes,0,len));
+				out.write(bytes,0,len);
+			}
+System.out.println(str.toString());
+System.out.flush();
+str.setLength(0);
+			out.close();
 			while ((len = in.read(bytes)) != -1) 
 			{
+str.append(new String(bytes,0,len));
 				bout.write(bytes, 0, len);
 			}
+System.err.println(str.toString());
 			int retCode = process.waitFor();
+System.err.println("retCode="+retCode);
 			if(retCode != 0)
 			{
 				final InputStream errin = process.getErrorStream();

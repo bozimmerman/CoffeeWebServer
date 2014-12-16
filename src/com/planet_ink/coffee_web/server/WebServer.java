@@ -9,10 +9,8 @@ import java.nio.channels.*;
 
 import javax.net.ssl.SSLContext;
 
-import com.planet_ink.coffee_web.interfaces.CGIConverterManager;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.MimeConverterManager;
-import com.planet_ink.coffee_web.http.CGIConverter;
 import com.planet_ink.coffee_web.http.HTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPReader;
 import com.planet_ink.coffee_web.http.HTTPReqProcessor;
@@ -55,7 +53,7 @@ limitations under the License.
 public class WebServer extends Thread
 {
 	public static final	String	  NAME				= "CoffeeWebServer";
-	public static final String	  POMVERSION		= "2.2";
+	public static final String	  POMVERSION		= "2.3";
 	public static 		double	  VERSION;
 	static { try { VERSION=Double.parseDouble(POMVERSION); } catch(final Exception e){ VERSION=0.0;} }
 	
@@ -513,14 +511,12 @@ public class WebServer extends Thread
 		final SessionManager sessionsManager = new SessionManager(config);
 		final FileCache fileCacheManager = new FileCache(config,config.getFileManager());
 		final MimeConverterManager mimeConverterManager = new MimeConverter(config);
-		final CGIConverterManager cgiConverterManager = new CGIConverter(config);
 		final HTTPReqProcessor fileGetter = new HTTPReqProcessor(config);
 		config.setSessions(sessionsManager);
 		config.setServletMan(servletsManager);
 		config.setFileCache(fileCacheManager);
 		config.setConverters(mimeConverterManager);
 		config.setFileGetter(fileGetter);
-		config.setCgiConverters(cgiConverterManager);
 		
 		HTTPHeader.setKeepAliveHeader(HTTPHeader.KEEP_ALIVE.makeLine(
 										String.format(HTTPHeader.KEEP_ALIVE_FMT, 

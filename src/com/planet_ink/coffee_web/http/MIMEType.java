@@ -269,12 +269,24 @@ public enum MIMEType
 	 */
 	public static MIMEType getMIMEType(final String filePath)
 	{
-		String extension;
+		final String extension;
 		final int x=filePath.lastIndexOf('.');
 		if(x>=0)
-			extension=filePath.substring(x+1).toLowerCase();
+			extension = filePath.substring(x+1).toLowerCase();
 		else
-			extension=filePath.toLowerCase();
+			extension = filePath.toLowerCase();
+		if(hashedTypes.containsKey(extension))
+			return hashedTypes.get(extension);
+		return MIMEType.DEFAULT;
+	}
+	
+	/**
+	 * Finds an appropriate mime type given the extension.
+	 * @param extension the extention to the read file
+	 * @return a matching file type, or the default if not found
+	 */
+	public static MIMEType getMIMETypeByExtension(final String extension)
+	{
 		if(hashedTypes.containsKey(extension))
 			return hashedTypes.get(extension);
 		return MIMEType.DEFAULT;
