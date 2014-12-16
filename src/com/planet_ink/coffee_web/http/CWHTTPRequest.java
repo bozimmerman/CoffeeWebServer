@@ -21,6 +21,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
 import com.planet_ink.coffee_web.util.CWConfig;
@@ -849,6 +850,30 @@ public class CWHTTPRequest implements HTTPRequest
 			return headerRefs;
 		}
 		return new Vector<String>(0);
+	}
+	
+	/**
+	 * A simple static method for parsing a header line and adding it to the given map.
+	 * @param headerLine the unparsed raw line of headerness
+	 * @param header the map to put the header in, if it was valid
+	 * @return the name of the header, or null if bad parse
+	 */
+	public static HTTPHeader parseHeaderLine(final String headerLine, final Map<HTTPHeader,String> headers)
+	{
+		final int x = headerLine.indexOf(':'); // first : is the right :
+		if(x > 0)
+		{
+			final String headerRawKey=headerLine.substring(0,x);
+			final String headerKey = headerRawKey.toLowerCase().trim(); // lowercase is normalized!!!
+			final String headerValue = headerLine.substring(x+1).trim();
+			final HTTPHeader header = HTTPHeader.find(headerKey);
+			if(header == null)
+				Log.errOut("Unknown header from cgi: "+headerKey);
+			else
+				headers.put(header , headerValue);
+			return header;
+		}
+		return null;
 	}
 	
 	/**

@@ -594,9 +594,11 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					File cgiFile = createFile(request, cgiPath);
 					if(!cgiFile.exists())
 						throw HTTPException.standardException(HTTPStatus.S404_NOT_FOUND);
-					final CGIProcessor cgiProcessor = new CGIProcessor(cgiFile.getAbsolutePath(), cgiPath, cgiPathInfo);
+					final String cgiExecPath = cgiFile.getAbsolutePath();
+					final String docRootStr = cgiFile.getParentFile().getAbsolutePath();
+					final CGIProcessor cgiProcessor = new CGIProcessor(cgiExecPath, docRootStr, cgiPath, cgiPathInfo);
 					final ByteBuffer output = cgiProcessor.convertOutput(config, request, cgiFile, responseStatus, ByteBuffer.wrap(new byte[0]));
-					buffers = new CWDataBuffers(output, System.currentTimeMillis(), false);
+					buffers = new CWDataBuffers(HTTPReader.parseCGIContent(output, extraHeaders), System.currentTimeMillis(), false);
 				}
 				else
 				{

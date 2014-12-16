@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -704,6 +705,60 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 			}
 			return written;
 		}
+	}
+	
+	/**
+	 * Parses CGI Input content, populating the given header map, and returning the content body
+	 * as a bytebuffer ready for reading.
+	 * @param inputBuffer the input buffer to read content from
+	 * @param headerOutput the map to put headers into
+	 * @return the bytebuffer with the content body, or null if the impossible occurs
+	 */
+	public static final ByteBuffer parseCGIContent(final ByteBuffer inputBuffer, final Map<HTTPHeader,String> headerOutput)
+	{
+		char c;	// current character being HDR_INLINE
+		ParseState state = ParseState.HDR_INLINE;
+		int lastEOLIndex = 0;
+		final int origPosition = inputBuffer.position();
+		while(inputBuffer.position() < inputBuffer.limit())
+		{
+			c=(char)inputBuffer.get();
+			switch(state)
+			{
+			case HDR_INLINE:
+				if(c=='\r')
+					state=ParseState.HDR_EOLN;
+				break;
+			case HDR_EOLN:
+			{
+				if (c=='\n')
+				{
+					final String headerLine = new String(Arrays.copyOfRange(inputBuffer.array(), lastEOLIndex, inputBuffer.position()-2),utf8);
+					lastEOLIndex=inputBuffer.position();
+					if(headerLine.length()>0) 
+					{
+						CWHTTPRequest.parseHeaderLine(headerLine, headerOutput);
+						state=ParseState.HDR_INLINE;
+					}
+					else // a blank line means the end of the header section!!!
+					{
+						inputBuffer.compact();
+						inputBuffer.flip();
+						return inputBuffer;
+					}
+				}
+				else // an error!
+				{
+					inputBuffer.position(origPosition);
+					return inputBuffer;
+				}
+				break;
+			}
+			default:
+				return null; // this can't happen
+			}
+		}
+		return ByteBuffer.wrap(new byte[0]);
 	}
 	
 	/**

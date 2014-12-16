@@ -27,6 +27,7 @@ limitations under the License.
 public enum HTTPHeader
 {
 	ACCEPT("Accept"),
+	STATUS("Status"),
 	ACCEPT_ENCODING("Accept-Encoding"),
 	ACCEPT_RANGES("Accept-Ranges","bytes"),
 	ALLOW("Allow",HTTPMethod.getAllowedList()),
@@ -51,7 +52,8 @@ public enum HTTPHeader
 	RANGE("Range"),
 	SERVER("Server"),
 	SET_COOKIE("Set-Cookie"),
-	TRANSFER_ENCODING("Transfer-Encoding")
+	TRANSFER_ENCODING("Transfer-Encoding"),
+	X_POWERED_BY("X-Powered-by")
 	;
 	public static final String		 		KEEP_ALIVE_FMT	= "timeout=%d, max=%d";
 	private static String					keepAliveHeader =KEEP_ALIVE_FMT;
@@ -97,6 +99,26 @@ public enum HTTPHeader
 	{
 		return keyName;
 	}
+	
+	/**
+	 * Finds the appropriate HTTPHeader object for the given header
+	 * God help the ones that don't exist.
+	 * @param str the string to match
+	 * @return the HTTPHeader object
+	 */
+	public static HTTPHeader find(final String str)
+	{
+		try
+		{
+			return HTTPHeader.valueOf(str.toUpperCase().replace('-','_'));
+		}
+		catch(Exception e) { }
+		for(HTTPHeader head : HTTPHeader.values())
+			if(head.lowerCaseName().equalsIgnoreCase(str))
+				return head;
+		return null;
+	}
+	
 	/**
 	 * Return a header line with the given value
 	 * @param value the value to assign to the header

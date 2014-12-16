@@ -40,12 +40,18 @@ public class CGIProcessor implements HTTPOutputConverter
 	private final String executeablePath;
 	private final String cgiUrl;
 	private final String cgiPathInfo;
+	private final String docRoot;
 
-	public CGIProcessor(String executeablePath, String cgiUrl, String cgiPathInfo)
+	public CGIProcessor(String executeablePath, String docRoot, String cgiUrl, String cgiPathInfo)
 	{
 		this.executeablePath=executeablePath;
 		this.cgiPathInfo = cgiPathInfo;
 		this.cgiUrl = cgiUrl;
+		this.docRoot = docRoot;
+		System.out.println("exe="+executeablePath);
+		System.out.println("cgiPathInfo="+cgiPathInfo);
+		System.out.println("cgiUrl="+cgiUrl);
+		System.out.println("docRoot="+docRoot);
 	}
 
 	private static enum EnvironmentVariables 
@@ -96,7 +102,9 @@ public class CGIProcessor implements HTTPOutputConverter
 		final ProcessBuilder builder = new ProcessBuilder(executeablePath);
 		final Map<String, String> env = builder.environment();
 		env.put(EnvironmentVariables.AUTH_TYPE.name(),"");
-		env.put(EnvironmentVariables.CONTENT_LENGTH.name(),""+buffer.remaining());
+		final String contentLength= request.getHeader(HTTPHeader.CONTENT_LENGTH.toString());
+		if(contentLength != null)
+			env.put(EnvironmentVariables.CONTENT_LENGTH.name(),contentLength);
 		final String contentType= request.getHeader(HTTPHeader.CONTENT_TYPE.toString());
 		if(contentType != null)
 			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
@@ -126,32 +134,30 @@ public class CGIProcessor implements HTTPOutputConverter
 			builder.redirectError(Redirect.PIPE);
 			builder.redirectOutput(Redirect.PIPE);
 			builder.redirectInput(Redirect.PIPE);
+			builder.directory(new File(docRoot));
 			final Process process = builder.start();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();
 			final InputStream in = process.getInputStream();
 			final OutputStream out = process.getOutputStream();
+			final InputStream bodyIn = request.getBody();
 			byte[] bytes = new byte[1024];
 			int len;
-StringBuilder str=new StringBuilder("");
-			while(buffer.remaining() > 0)
+			if(bodyIn != null)
 			{
-				len = buffer.remaining() >= bytes.length ? bytes.length : buffer.remaining();
-				buffer.get(bytes,0,len);
-str.append(new String(bytes,0,len));
-				out.write(bytes,0,len);
+				while ((len = bodyIn.read(bytes)) != -1) 
+				{
+					out.write(bytes, 0, len);
+				}
 			}
-System.out.println(str.toString());
-System.out.flush();
-str.setLength(0);
 			out.close();
+			//TODO: Remove StringBuilder str=new StringBuilder("");
 			while ((len = in.read(bytes)) != -1) 
 			{
-str.append(new String(bytes,0,len));
 				bout.write(bytes, 0, len);
+				//TODO: Remove str.append(new String(bytes,0,len));
 			}
-System.err.println(str.toString());
 			int retCode = process.waitFor();
-System.err.println("retCode="+retCode);
+			//TODO: Remove System.out.println(retCode+"/"+str.toString());
 			if(retCode != 0)
 			{
 				final InputStream errin = process.getErrorStream();
