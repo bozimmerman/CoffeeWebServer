@@ -48,10 +48,6 @@ public class CGIProcessor implements HTTPOutputConverter
 		this.cgiPathInfo = cgiPathInfo;
 		this.cgiUrl = cgiUrl;
 		this.docRoot = docRoot;
-		System.out.println("exe="+executeablePath);
-		System.out.println("cgiPathInfo="+cgiPathInfo);
-		System.out.println("cgiUrl="+cgiUrl);
-		System.out.println("docRoot="+docRoot);
 	}
 
 	private static enum EnvironmentVariables 

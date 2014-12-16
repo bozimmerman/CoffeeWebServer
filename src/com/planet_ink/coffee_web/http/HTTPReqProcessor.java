@@ -218,7 +218,11 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	private ByteBuffer generateStandardHeaderResponse(HTTPRequest request, HTTPStatus status, Map<HTTPHeader,String> headers, DataBuffers response) throws HTTPException
 	{
 		final StringBuilder str=new StringBuilder("");
-		str.append("HTTP/").append(request.getHttpVer()).append(" ").append(status.getStatusCode()).append(" ").append(status.description());
+		final String overrideStatus = headers.get(HTTPHeader.STATUS);
+		if(overrideStatus != null)
+			str.append("HTTP/").append(request.getHttpVer()).append(" ").append(overrideStatus);
+		else
+			str.append("HTTP/").append(request.getHttpVer()).append(" ").append(status.getStatusCode()).append(" ").append(status.description());
 		str.append(EOLN);
 		for(final HTTPHeader header : headers.keySet())
 			str.append(header.makeLine(headers.get(header)));
