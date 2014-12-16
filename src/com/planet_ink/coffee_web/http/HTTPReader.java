@@ -801,7 +801,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 							if(accessLog != null)
 								accessLog.append(Log.makeLogEntry(Log.Type.access, Thread.currentThread().getName(), 
 									currentReq.getClientAddress().getHostAddress()
-									+" "+currentReq.getHost()
+									+" "+currentReq.getHost()+":"+currentReq.getClientPort()
 									+" \""+currentReq.getFullRequest()+" \" "+processor.getLastHttpStatusCode()+" "+bufs.getLength())).append("\n");
 							writeBytesToChannel(bufs);
 							// after output, prepare for a second request on this channel
@@ -823,7 +823,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 					if(accessLog != null)
 						accessLog.append(Log.makeLogEntry(Log.Type.access, Thread.currentThread().getName(), 
 							currentReq.getClientAddress().getHostAddress()
-							+" "+currentReq.getHost()
+							+" "+currentReq.getHost()+":"+currentReq.getClientPort()
 							+" \""+currentReq.getFullRequest()+"\" "+me.getStatus().getStatusCode()+" "+bufs.getLength())).append("\n");
 					// have to assume any exception caused
 					// before a finish is malformed and needs a closed connection.

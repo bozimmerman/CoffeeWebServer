@@ -301,10 +301,10 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 * If you wish to add a special directory root for html docs, this would
 	 * be the appropriate place to do it.
 	 * @param request the request being processed
-	 * @return the full assembled file
+	 * @return the full assembled file path
 	 */
 	@Override
-	public File assembleFileRequest(HTTPRequest request)
+	public String assembleFilePath(HTTPRequest request)
 	{
 		final String[] url = request.getUrlPath().split("/");
 		final StringBuilder fullPath = new StringBuilder("/");
@@ -327,22 +327,30 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					fullPath.append('/').append(fixedUrl.get(i));
 			}
 		}
-		final String fullPathStr=fullPath.toString();
-		String host=request.getHost();
-		final int x=host.indexOf(':');
-		if(x>0) host=host.substring(0, x); // we only care about the host, we KNOW the port.
-		final Pair<String,String> newPath=config.getMount(host,request.getClientPort(),fullPathStr);
-		File finalFile;
-		final FileManager mgr=config.getFileManager();
-		if(newPath == null)
-			finalFile = mgr.createFileFromPath(fullPathStr.replace('/', mgr.getFileSeparator()));
-		else
+		return fullPath.toString();
+	}
+	
+	/**
+	 * After a final file path is assembled, this method
+	 * returns a file object appropriate to accessing the
+	 * given path.
+	 * @param request the request being processed
+	 * @param filePath the path being accessed
+	 * @return the File object
+	 */
+	@Override
+	public File createFile(final HTTPRequest request, String filePath)
+	{
+		final Pair<String,String> mountPath=config.getMount(request.getHost(),request.getClientPort(),filePath);
+		if(mountPath != null)
 		{
-			String newFullPath=fullPathStr.substring(newPath.first.length());
-			if(newFullPath.startsWith("/")&&newPath.second.endsWith("/"))
+			String newFullPath=filePath.substring(mountPath.first.length());
+			if(newFullPath.startsWith("/")&&mountPath.second.endsWith("/"))
 				newFullPath=newFullPath.substring(1);
-			finalFile=mgr.createFileFromPath((newPath.second+newFullPath).replace('/', mgr.getFileSeparator())); // subtract one for the /
+			filePath = (mountPath.second+newFullPath);
 		}
+		final FileManager mgr=config.getFileManager();
+		File finalFile = mgr.createFileFromPath(filePath.replace('/', mgr.getFileSeparator()));
 		// see if the path we have is complete, or if there's an implicit default page requested.
 		if(request.getUrlPath().endsWith("/"))
 		{
@@ -350,7 +358,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			finalFile=mgr.createFileFromPath(finalFile,config.getDefaultPage());
 			if((!finalFile.exists())&&(dirFile.exists())&&(dirFile.isDirectory()))
 			{
-				String browseCode = config.getBrowseCode(host,request.getClientPort(),fullPathStr);
+				String browseCode = config.getBrowseCode(request.getHost(),request.getClientPort(),filePath);
 				if(browseCode != null) // it's allowed to be browsed
 					finalFile = dirFile;
 			}
@@ -502,7 +510,8 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		}
 		
 		// not a servlet, so it must be a file path
-		final File pathFile = assembleFileRequest(request);
+		final String reqPath = assembleFilePath(request);
+		final File pathFile = createFile(request, reqPath);
 		final File pageFile;
 		if(pathFile.isDirectory())
 		{
@@ -559,94 +568,113 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	@Override
 	public DataBuffers generateOutput(HTTPRequest request) throws HTTPException
 	{
-		if(request.getUrlPath().length()>1)
-		{
-			final Class<? extends SimpleServlet> servletClass = config.getServletMan().findServlet(request.getUrlPath().substring(1));
-			if(servletClass != null)
-			{
-				return executeServlet(request,servletClass);
-			}
-		}
-		
-		// not a servlet, so it must be a file path
-		final File pathFile = assembleFileRequest(request);
-		final File pageFile;
-		if(pathFile.isDirectory())
-		{
-			if(!request.getUrlPath().endsWith("/"))
-			{
-				final HTTPException movedException=HTTPException.standardException(HTTPStatus.S301_MOVED_PERMANENTLY);
-				movedException.getErrorHeaders().put(HTTPHeader.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
-				throw movedException;
-			}
-			pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
-		}
-		else
-		{
-			pageFile = pathFile;
-		}
-		
-		final MIMEType mimeType = MIMEType.getMIMEType(pageFile.getName());
-		final Map<HTTPHeader,String> extraHeaders=new TreeMap<HTTPHeader, String>();
-		extraHeaders.put(HTTPHeader.CONTENT_TYPE, mimeType.getType());
-		confirmMimeType(request,mimeType);
-		
-		HTTPStatus responseStatus = HTTPStatus.S200_OK;
 		DataBuffers buffers = null;
 		try
 		{
-			buffers = new CWDataBuffers(); // before forming output, process range request
-			switch(request.getMethod())
+			if(request.getUrlPath().length()>1)
 			{
-			case HEAD:
-			case GET:
-			case POST:
-			{
-				final Class<? extends HTTPOutputConverter> converterClass=config.getConverters().findConverter(mimeType);
-				if(converterClass != null)
+				final Class<? extends SimpleServlet> servletClass = config.getServletMan().findServlet(request.getUrlPath().substring(1));
+				if(servletClass != null)
 				{
-					buffers=config.getFileCache().getFileData(pageFile, null);
-					//checkIfModifiedSince(request,buffers); this is RETARDED!!!
-					try
-					{
-						HTTPOutputConverter converter;
-						converter = converterClass.newInstance();
-						extraHeaders.put(HTTPHeader.CACHE_CONTROL, "no-cache");
-						final long dateTime=System.currentTimeMillis();
-						extraHeaders.put(HTTPHeader.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
-						buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), dateTime, true);
-						buffers = handleEncodingRequest(request, null, buffers, extraHeaders);
-					}
-					catch (final Exception e)
-					{
-						config.getLogger().throwing("", "", e);
-						throw HTTPException.standardException(HTTPStatus.S500_INTERNAL_ERROR);
-					}
+					buffers=executeServlet(request,servletClass);
+				}
+			}
+			
+			final Map<HTTPHeader,String> extraHeaders=new TreeMap<HTTPHeader, String>();
+			HTTPStatus responseStatus = HTTPStatus.S200_OK;
+			if(buffers == null)
+			{
+				// not a servlet, so it must be a file path
+				final String reqPath = assembleFilePath(request);
+				if(reqPath.startsWith("/cgi-bin/") && (reqPath.length()>9))
+				{
+					int nextSlash=reqPath.indexOf('/',9);
+					final String cgiPath=reqPath.substring(0,nextSlash<0?reqPath.length():nextSlash);
+					final String cgiPathInfo = (nextSlash<0) ? "" : reqPath.substring(nextSlash);
+					File cgiFile = createFile(request, cgiPath);
+					if(!cgiFile.exists())
+						throw HTTPException.standardException(HTTPStatus.S404_NOT_FOUND);
+					final CGIProcessor cgiProcessor = new CGIProcessor(cgiFile.getAbsolutePath(), cgiPath, cgiPathInfo);
+					final ByteBuffer output = cgiProcessor.convertOutput(config, request, cgiFile, responseStatus, ByteBuffer.wrap(new byte[0]));
+					buffers = new CWDataBuffers(output, System.currentTimeMillis(), false);
 				}
 				else
 				{
-					final String[] eTagMarker =generateETagMarker(request);
-					buffers=config.getFileCache().getFileData(pageFile, eTagMarker);
-					if((eTagMarker[0]!=null)&&(eTagMarker[0].length()>0))
-						extraHeaders.put(HTTPHeader.ETAG, eTagMarker[0]);
-					checkIfModifiedSince(request,buffers);
-					buffers = handleEncodingRequest(request, pageFile, buffers, extraHeaders);
+					final File pageFile;
+					final File pathFile;
+					pathFile = createFile(request, reqPath);
+					if(pathFile.isDirectory())
+					{
+						if(!request.getUrlPath().endsWith("/"))
+						{
+							final HTTPException movedException=HTTPException.standardException(HTTPStatus.S301_MOVED_PERMANENTLY);
+							movedException.getErrorHeaders().put(HTTPHeader.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
+							throw movedException;
+						}
+						pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
+					}
+					else
+					{
+						pageFile = pathFile;
+					}
+					buffers = new CWDataBuffers(); // before forming output, process range request
+					switch(request.getMethod())
+					{
+					case HEAD:
+					case GET:
+					case POST:
+					{
+						final MIMEType mimeType = MIMEType.getMIMEType(pageFile.getName());
+						extraHeaders.put(HTTPHeader.CONTENT_TYPE, mimeType.getType());
+						confirmMimeType(request,mimeType);
+						
+						final Class<? extends HTTPOutputConverter> converterClass=config.getConverters().findConverter(mimeType);
+						if(converterClass != null)
+						{
+							buffers=config.getFileCache().getFileData(pageFile, null);
+							//checkIfModifiedSince(request,buffers); this is RETARDED!!!
+							try
+							{
+								HTTPOutputConverter converter;
+								converter = converterClass.newInstance();
+								extraHeaders.put(HTTPHeader.CACHE_CONTROL, "no-cache");
+								final long dateTime=System.currentTimeMillis();
+								extraHeaders.put(HTTPHeader.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
+								buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), dateTime, true);
+								buffers = handleEncodingRequest(request, null, buffers, extraHeaders);
+							}
+							catch (final Exception e)
+							{
+								config.getLogger().throwing("", "", e);
+								throw HTTPException.standardException(HTTPStatus.S500_INTERNAL_ERROR);
+							}
+						}
+						else
+						{
+							final String[] eTagMarker =generateETagMarker(request);
+							buffers=config.getFileCache().getFileData(pageFile, eTagMarker);
+							if((eTagMarker[0]!=null)&&(eTagMarker[0].length()>0))
+								extraHeaders.put(HTTPHeader.ETAG, eTagMarker[0]);
+							checkIfModifiedSince(request,buffers);
+							buffers = handleEncodingRequest(request, pageFile, buffers, extraHeaders);
+						}
+						if(buffers == null)
+						{
+							throw HTTPException.standardException(HTTPStatus.S500_INTERNAL_ERROR);
+						}
+						final long fullSize = buffers.getLength();
+						final long[] fullRange = setRangeRequests(request, buffers);
+						if(fullRange != null)
+						{
+							responseStatus = HTTPStatus.S206_PARTIAL_CONTENT;
+							extraHeaders.put(HTTPHeader.CONTENT_RANGE, "bytes "+fullRange[0]+"-"+fullRange[1]+"/"+fullSize);
+						}
+						break;
+					}
+					default:
+						break;
+					}
 				}
-				if(buffers == null)
-				{
-					throw HTTPException.standardException(HTTPStatus.S500_INTERNAL_ERROR);
-				}
-				final long fullSize = buffers.getLength();
-				final long[] fullRange = setRangeRequests(request, buffers);
-				if(fullRange != null)
-				{
-					responseStatus = HTTPStatus.S206_PARTIAL_CONTENT;
-					extraHeaders.put(HTTPHeader.CONTENT_RANGE, "bytes "+fullRange[0]+"-"+fullRange[1]+"/"+fullSize);
-				}
-				break;
-			}
-			default:
-				break;
 			}
 
 			lastHttpStatusCode=responseStatus.getStatusCode();
@@ -655,9 +683,6 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			int chunkedSize = 0;
 			if(specifiedHost != null)
 			{
-				int portIndex=specifiedHost.indexOf(':');
-				if(portIndex > 0)
-					specifiedHost=specifiedHost.substring(0,portIndex);
 				final ChunkSpec chunkSpec = config.getChunkSpec(specifiedHost, request.getClientPort(), request.getUrlPath());
 				if((chunkSpec != null) && (buffers.getLength() >= chunkSpec.getMinFileSize())) 
 				{

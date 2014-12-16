@@ -74,6 +74,7 @@ public class CWHTTPRequest implements HTTPRequest
 	private ByteBuffer	 		 	buffer;	  					// acts as both the line buffer and data buffer
 	private int					 	bodyLength		= 0;		// length of the data buffer, and flag that a body was received
 	private float				 	httpVer	  		= 1.0f;		// version of this http request (1.0, 1.1, etc)
+	private String					simpleHost		= null;
 	private InputStream			 	bodyStream		= null;		// the input stream for the main data body
 	private String				 	uriPage	  		= null;		// portion of the request without urlparameters
 	private boolean				 	isFinished		= false;	// flag as to whether finishRequest and processing is ready
@@ -231,7 +232,20 @@ public class CWHTTPRequest implements HTTPRequest
 	@Override
 	public String getHost()
 	{
-		return headers.get(HTTPHeader.HOST.toString().toLowerCase());
+		if(simpleHost == null)
+		{
+			String newSimpleHost = headers.get(HTTPHeader.HOST.toString().toLowerCase());
+			if(newSimpleHost != null)
+			{
+				int x=newSimpleHost.indexOf(':');
+				if(x>=0)
+					newSimpleHost=newSimpleHost.substring(0,x);
+			}
+			else
+				newSimpleHost = "";
+			this.simpleHost = newSimpleHost;
+		}
+		return simpleHost;
 	}
 	
 	/**

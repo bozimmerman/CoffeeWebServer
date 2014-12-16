@@ -1,4 +1,4 @@
-package com.planet_ink.coffee_web.converters;
+package com.planet_ink.coffee_web.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,13 +35,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-public class CGIConverter implements HTTPOutputConverter
+public class CGIProcessor implements HTTPOutputConverter
 {
-	private final String executeable;
+	private final String executeablePath;
+	private final String cgiUrl;
+	private final String cgiPathInfo;
 
-	public CGIConverter(String executeable)
+	public CGIProcessor(String executeablePath, String cgiUrl, String cgiPathInfo)
 	{
-		this.executeable=executeable;
+		this.executeablePath=executeablePath;
+		this.cgiPathInfo = cgiPathInfo;
+		this.cgiUrl = cgiUrl;
 	}
 
 	private static enum EnvironmentVariables 
@@ -89,24 +93,23 @@ public class CGIConverter implements HTTPOutputConverter
 			Log.errOut("CGIConverter requires a non-null request.");
 			return buffer;
 		}
-		final ProcessBuilder builder = new ProcessBuilder(executeable);
+		final ProcessBuilder builder = new ProcessBuilder(executeablePath);
 		final Map<String, String> env = builder.environment();
 		env.put(EnvironmentVariables.AUTH_TYPE.name(),"");
 		env.put(EnvironmentVariables.CONTENT_LENGTH.name(),""+buffer.remaining());
-		if(request.getHeader(HTTPHeader.CONTENT_TYPE.toString()) != null)
-			env.put(EnvironmentVariables.CONTENT_TYPE.name(),request.getHeader(HTTPHeader.CONTENT_TYPE.toString()));
-		else
-			env.put(EnvironmentVariables.CONTENT_TYPE.name(),MIMEType.html.getType());
+		final String contentType= request.getHeader(HTTPHeader.CONTENT_TYPE.toString());
+		if(contentType != null)
+			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
 		env.put(EnvironmentVariables.GATEWAY_INTERFACE.name(),"CGI/1.1");
-		env.put(EnvironmentVariables.PATH_INFO.name(),request.getUrlPath());
-		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"");
+		env.put(EnvironmentVariables.PATH_INFO.name(),cgiPathInfo);
+		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+"/"+cgiPathInfo);
 		env.put(EnvironmentVariables.QUERY_STRING.name(),request.getQueryString());
 		env.put(EnvironmentVariables.REMOTE_ADDR.name(),request.getClientAddress().toString());
 		//env.put(EnvironmentVariables.REMOTE_HOST.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_IDENT.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_USER.name(),null);
 		env.put(EnvironmentVariables.REQUEST_METHOD.name(),request.getMethod().toString());
-		env.put(EnvironmentVariables.SCRIPT_NAME.name(),request.getUrlPath());
+		env.put(EnvironmentVariables.SCRIPT_NAME.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+"/"+cgiUrl);
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_PROTOCOL.name(),"HTTP/"+request.getHttpVer());
