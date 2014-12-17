@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -127,9 +126,6 @@ public class CGIProcessor implements HTTPOutputConverter
 		}
 		try 
 		{
-			builder.redirectError(Redirect.PIPE);
-			builder.redirectOutput(Redirect.PIPE);
-			builder.redirectInput(Redirect.PIPE);
 			builder.directory(new File(docRoot));
 			final Process process = builder.start();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();

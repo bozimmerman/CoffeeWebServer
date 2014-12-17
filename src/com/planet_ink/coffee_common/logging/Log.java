@@ -502,7 +502,7 @@ public class Log extends java.util.logging.Logger
 	/**
 	 * Returns an internally managed log reader class to make
 	 * reading lines from the log slightly easier
-	 * @return
+	 * @return the internal Log Reader
 	 */
 	public final LogReader getLogReader()
 	{

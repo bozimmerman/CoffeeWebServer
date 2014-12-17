@@ -855,7 +855,7 @@ public class CWHTTPRequest implements HTTPRequest
 	/**
 	 * A simple static method for parsing a header line and adding it to the given map.
 	 * @param headerLine the unparsed raw line of headerness
-	 * @param header the map to put the header in, if it was valid
+	 * @param headers the map to put the header in, if it was valid
 	 * @return the name of the header, or null if bad parse
 	 */
 	public static HTTPHeader parseHeaderLine(final String headerLine, final Map<HTTPHeader,String> headers)

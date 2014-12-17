@@ -103,7 +103,6 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 	 * Constructor takes the server managing this request, and the channel to read from and write to.
 	 * @param server the web server managing this runner, a place to get the config and register new ops
 	 * @param chan the channel to read from and write to
-	 * @param registerOps a list to add to when you need the server to make channel changes
 	 * @throws IOException
 	 */
 	public HTTPReader(WebServer server, SocketChannel chan) throws IOException
@@ -128,7 +127,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 	/**
 	 * Returns a descriptive string for whether this is 
 	 * an ssl or http reader
-	 * @return
+	 * @return the reader type, http or https
 	 */
 	protected String getReaderType()
 	{

@@ -409,7 +409,7 @@ public class WebServer extends Thread
 	/**
 	 * Enqueue a new socket channel to be registered for read notifications.
 	 * Does not do the action at once, but will, soon.
-	 * @param chan the socket channel to register
+	 * @param channel the socket channel to register
 	 * @param handler the handler to handle it.
 	 */
 	public void registerNewHandler(final SocketChannel channel, final HTTPIOHandler handler)
@@ -445,7 +445,7 @@ public class WebServer extends Thread
 	/**
 	 * Enqueue a new socket channel to be registered for read notifications.
 	 * Does not do the action at once, but will, soon.
-	 * @param chan the socket channel to register
+	 * @param channel the socket channel to register
 	 * @param newOp the new operations for this channel
 	 */
 	public void registerChannelInterest(final SocketChannel channel, final int newOp)

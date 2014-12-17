@@ -39,7 +39,7 @@ public class MimeConverter implements MimeConverterManager
 	
 	/**
 	 * Construct a mime config manager, loading the converters from the config given
-	 * @param config
+	 * @param config the configuration for the web server
 	 */
 	public MimeConverter(CWConfig config)
 	{
@@ -73,7 +73,7 @@ public class MimeConverter implements MimeConverterManager
 	/**
 	 * Internal method to register a servlets existence, and its context.
 	 * This will go away when a config file is permitted
-	 * @param context the uri context the servlet responds to
+	 * @param mime the mime type to register the converter to
 	 * @param converterClass the class of the converter
 	 */
 	@Override

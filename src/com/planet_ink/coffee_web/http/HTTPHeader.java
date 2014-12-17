@@ -63,12 +63,14 @@ public enum HTTPHeader
 	private String name;
 	private String defaultValue;
 	private String keyName;
+
 	private HTTPHeader(String name, String defaultValue)
 	{
 		this.name=name;
 		this.defaultValue=defaultValue;
 		this.keyName=name.toLowerCase();
 	}
+
 	private HTTPHeader(String name)
 	{
 		this(name,"");
@@ -186,7 +188,7 @@ public enum HTTPHeader
 	}
 	/**
 	 * Return the statically defined keep alive header line
-	 * @return
+	 * @return the keep alive header line, a favorite
 	 */
 	public static String getKeepAliveHeader()
 	{

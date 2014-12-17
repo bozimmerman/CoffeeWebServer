@@ -1020,8 +1020,8 @@ public class CWConfig implements Cloneable
 	}
 	
 	/**
-	 * 
-	 * @return
+	 * Returns a copy of this configuration
+	 * @return a copy of this object
 	 */
 	public CWConfig copyOf()
 	{
