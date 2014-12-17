@@ -736,7 +736,8 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 					lastEOLIndex=inputBuffer.position();
 					if(headerLine.length()>0) 
 					{
-						CWHTTPRequest.parseHeaderLine(headerLine, headerOutput);
+						if(headerOutput != null)
+							CWHTTPRequest.parseHeaderLine(headerLine, headerOutput);
 						state=ParseState.HDR_INLINE;
 					}
 					else // a blank line means the end of the header section!!!
