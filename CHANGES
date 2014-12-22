@@ -1,5 +1,5 @@
 2015-?-??   2.3 Bo Zimmerman <bo@zimmers.net>
-    *. Support for CGIs.  Tested with Mediawiki for PHP
+    *. Support for CGIs.  TODO: Test with Mediawiki for PHP
 
 2014-9-16   2.2 Bo Zimmerman <bo@zimmers.net>
 
