@@ -12,7 +12,6 @@ import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_web.http.HTTPException;
 import com.planet_ink.coffee_web.http.HTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPStatus;
-import com.planet_ink.coffee_web.http.MIMEType;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
 import com.planet_ink.coffee_web.server.WebServer;
@@ -127,12 +126,12 @@ public class CGIProcessor implements HTTPOutputConverter
 		try 
 		{
 			builder.directory(new File(docRoot));
-			final Process process = builder.start();
+			final InputStream bodyIn = request.getBody();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();
+			final Process process = builder.start();
 			final InputStream in = process.getInputStream();
 			final OutputStream out = process.getOutputStream();
-			final InputStream bodyIn = request.getBody();
-			byte[] bytes = new byte[1024];
+			final byte[] bytes = new byte[1024];
 			int len;
 			if(bodyIn != null)
 			{
