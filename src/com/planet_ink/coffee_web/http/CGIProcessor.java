@@ -48,6 +48,7 @@ public class CGIProcessor implements HTTPOutputConverter
 		this.docRoot = docRoot;
 	}
 
+	//http://www.comptechdoc.org/independent/web/cgi/cgimanual/cgivars.html
 	private static enum EnvironmentVariables 
 	{ 
 		AUTH_TYPE,
@@ -63,7 +64,8 @@ public class CGIProcessor implements HTTPOutputConverter
 		REMOTE_IDENT,
 		REMOTE_USER,
 		REQUEST_METHOD,
-		SCRIPT_NAME,
+		SCRIPT_NAME,  // just the stuff after php.exe -- the 'script" 
+		SCRIPT_FILENAME, // full local path to stuff after php.exe -- the "script"
 		SERVER_NAME,
 		SERVER_PORT,
 		SERVER_PROTOCOL,
@@ -95,7 +97,7 @@ public class CGIProcessor implements HTTPOutputConverter
 		}
 		final ProcessBuilder builder = new ProcessBuilder(executeablePath);
 		final Map<String, String> env = builder.environment();
-		env.put(EnvironmentVariables.AUTH_TYPE.name(),"");
+		env.remove(EnvironmentVariables.AUTH_TYPE.name());
 		final String contentLength= request.getHeader(HTTPHeader.CONTENT_LENGTH.toString());
 		if(contentLength != null)
 			env.put(EnvironmentVariables.CONTENT_LENGTH.name(),contentLength);
@@ -104,14 +106,15 @@ public class CGIProcessor implements HTTPOutputConverter
 			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
 		env.put(EnvironmentVariables.GATEWAY_INTERFACE.name(),"CGI/1.1");
 		env.put(EnvironmentVariables.PATH_INFO.name(),cgiPathInfo);
-		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+"/"+cgiPathInfo);
+		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+cgiPathInfo);
 		env.put(EnvironmentVariables.QUERY_STRING.name(),request.getQueryString());
 		env.put(EnvironmentVariables.REMOTE_ADDR.name(),request.getClientAddress().toString());
 		//env.put(EnvironmentVariables.REMOTE_HOST.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_IDENT.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_USER.name(),null);
 		env.put(EnvironmentVariables.REQUEST_METHOD.name(),request.getMethod().toString());
-		env.put(EnvironmentVariables.SCRIPT_NAME.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+"/"+cgiUrl);
+		env.put(EnvironmentVariables.SCRIPT_NAME.name(),cgiUrl);
+		env.put(EnvironmentVariables.SCRIPT_FILENAME.name(),cgiUrl);
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_PROTOCOL.name(),"HTTP/"+request.getHttpVer());
@@ -121,8 +124,13 @@ public class CGIProcessor implements HTTPOutputConverter
 		{
 			final String value=request.getHeader(header.name());
 			if(value != null)
+			{
 				env.put("HTTP_"+header.name().replace('-','_'),value);
+System.out.println("set \"HTTP_"+header.name().replace('-','_')+"="+value+"\"");
+			}
 		}
+for(EnvironmentVariables vari : EnvironmentVariables.values())
+	System.out.println("set \""+vari.name()+"="+env.get(vari.name())+"\"");
 		try 
 		{
 			builder.directory(new File(docRoot));
