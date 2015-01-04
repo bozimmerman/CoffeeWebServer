@@ -110,7 +110,10 @@ public class CGIProcessor implements HTTPOutputConverter
 			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
 		final Pair<String,String> rootMount = config.getMount(request.getHost(), request.getClientPort(), "/");
 		if(rootMount != null)
-			env.put(EnvironmentVariables.DOCUMENT_ROOT.name(),new File(rootMount.second).getAbsolutePath());
+		{
+			final File docRootFile = config.getFileManager().createFileFromPath(rootMount.second);
+			env.put(EnvironmentVariables.DOCUMENT_ROOT.name(),docRootFile.getAbsolutePath());
+		}
 		env.put(EnvironmentVariables.GATEWAY_INTERFACE.name(),"CGI/1.1");
 		env.put(EnvironmentVariables.PATH_INFO.name(),cgiPathInfo);
 		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+cgiPathInfo);
@@ -137,7 +140,8 @@ public class CGIProcessor implements HTTPOutputConverter
 				scriptFilename = (mountPath.second+newFullPath);
 			}
 		}
-		env.put(EnvironmentVariables.SCRIPT_FILENAME.name(),new File(scriptFilename.replace('/', config.getFileManager().getFileSeparator())).getAbsolutePath());
+		final File scriptFilenameFile = config.getFileManager().createFileFromPath(scriptFilename.replace('/', config.getFileManager().getFileSeparator()));
+		env.put(EnvironmentVariables.SCRIPT_FILENAME.name(),scriptFilenameFile.getAbsolutePath());
 		env.put(EnvironmentVariables.SERVER_ADMIN.name(),"unknonwn@nowhere.com"); //TODO: add this to config -- nice idea
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
@@ -153,11 +157,11 @@ public class CGIProcessor implements HTTPOutputConverter
 				env.put("HTTP_"+header.name().replace('-','_'),value);
 			}
 		}
-for(EnvironmentVariables vari : EnvironmentVariables.values())
+for(EnvironmentVariables vari : EnvironmentVariables.values()) //TODO: BZ: DELME
 	System.out.println("set \""+vari.name()+"="+env.get(vari.name())+"\"");
 		try 
 		{
-			builder.directory(new File(docRoot));
+			builder.directory(config.getFileManager().createFileFromPath(docRoot));
 			final InputStream bodyIn = request.getBody();
 			final ByteArrayOutputStream bout=new ByteArrayOutputStream();
 			final Process process = builder.start();
