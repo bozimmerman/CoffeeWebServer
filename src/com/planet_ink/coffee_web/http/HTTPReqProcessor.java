@@ -506,10 +506,11 @@ public class HTTPReqProcessor implements HTTPFileGetter
 
 		String cgiMountPath=cgiMount.first;
 		String cgiLocalExePath=cgiMount.second;
-		String remainderSubPath=reqPath.substring(cgiMountPath.length());
+		String remainderSubPath=reqPath;
 		File cgiFile = createFile(request, cgiLocalExePath);
 		if((!cgiFile.exists())||(cgiFile.isDirectory()))
 		{
+			remainderSubPath=remainderSubPath.substring(cgiMountPath.length());
 			while(remainderSubPath.startsWith("/"))
 				remainderSubPath=remainderSubPath.substring(1);
 			int nextSlash=remainderSubPath.indexOf('/');
