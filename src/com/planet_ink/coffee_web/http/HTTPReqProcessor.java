@@ -506,16 +506,16 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		String cgiMountPath=cgiMount.first;
 		String cgiLocalExePath=cgiMount.second;
 		String remainderSubPath=reqPath;
+		remainderSubPath=remainderSubPath.substring(cgiMountPath.length());
+		while(remainderSubPath.startsWith("/"))
+			remainderSubPath=remainderSubPath.substring(1);
+		int nextSlash=remainderSubPath.indexOf('/');
+		final int quesMark=remainderSubPath.lastIndexOf('?',nextSlash);
+		if(quesMark>0)
+			nextSlash=quesMark;
 		File cgiFile = createFile(request, cgiLocalExePath);
 		if((!cgiFile.exists())||(cgiFile.isDirectory()))
 		{
-			remainderSubPath=remainderSubPath.substring(cgiMountPath.length());
-			while(remainderSubPath.startsWith("/"))
-				remainderSubPath=remainderSubPath.substring(1);
-			int nextSlash=remainderSubPath.indexOf('/');
-			final int quesMark=remainderSubPath.lastIndexOf('?',nextSlash);
-			if(quesMark>0)
-				nextSlash=quesMark;
 			String cgiExeName = remainderSubPath;
 			if(nextSlash>0)
 			{
@@ -533,6 +533,16 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			cgiFile = createFile(request, cgiLocalExePath);
 			if((!cgiFile.exists())||(cgiFile.isDirectory()))
 				throw HTTPException.standardException(HTTPStatus.S404_NOT_FOUND);
+		}
+		else
+		{
+			if(nextSlash>0)
+			{
+				cgiMountPath = remainderSubPath.substring(0,nextSlash);
+				remainderSubPath = remainderSubPath.substring(nextSlash);
+			}
+			else
+				remainderSubPath="";
 		}
 		final String cgiExecPath = cgiFile.getAbsolutePath();
 		final String cgiRootStr = cgiFile.getParentFile().getAbsolutePath();

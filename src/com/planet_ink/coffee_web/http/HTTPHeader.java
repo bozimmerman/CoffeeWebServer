@@ -53,7 +53,10 @@ public enum HTTPHeader
 	SERVER("Server"),
 	SET_COOKIE("Set-Cookie"),
 	TRANSFER_ENCODING("Transfer-Encoding"),
-	X_POWERED_BY("X-Powered-by")
+	X_POWERED_BY("X-Powered-by"),
+	X_CONTENT_TYPE_OPTIONS("X-Content-Type-Options"),
+	PRAGMA("Pragma"),
+	X_FRAME_OPTIONS("X-Frame-Options")
 	;
 	public static final String		 		KEEP_ALIVE_FMT	= "timeout=%d, max=%d";
 	private static String					keepAliveHeader =KEEP_ALIVE_FMT;

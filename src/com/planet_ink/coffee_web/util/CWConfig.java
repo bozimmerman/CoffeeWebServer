@@ -18,6 +18,7 @@ import com.planet_ink.coffee_web.interfaces.MimeConverterManager;
 import com.planet_ink.coffee_web.interfaces.ServletSessionManager;
 import com.planet_ink.coffee_web.interfaces.SimpleServletManager;
 import com.planet_ink.coffee_web.server.WebServer;
+import com.planet_ink.coffee_common.collections.KeyPairWildSearchTree;
 import com.planet_ink.coffee_common.collections.Pair;
 import com.planet_ink.coffee_common.collections.Triad;
 import com.planet_ink.coffee_common.collections.KeyPairSearchTree;
@@ -440,7 +441,7 @@ public class CWConfig implements Cloneable
 	private final Pair<String,String> getContextPair(final Map<String,Map<Integer,KeyPairSearchTree<String>>> map, 
 													 final String host, final int port, final String context)
 	{
-		Map<Integer,KeyPairSearchTree<String>> portMap=map.get(host);
+		Map<Integer,? extends KeyPairSearchTree<String>> portMap=map.get(host);
 		if(portMap != null)
 		{
 			KeyPairSearchTree<String> contexts=portMap.get(Integer.valueOf(port));
@@ -1303,7 +1304,8 @@ public class CWConfig implements Cloneable
 		return null;
 	}
 
-	public Map<String,Map<Integer,KeyPairSearchTree<String>>> getContextMap(final String prefix, final Properties props)
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String,Map<Integer,KeyPairSearchTree<String>>> getContextMap(final String prefix, final Properties props, final Class<? extends KeyPairSearchTree> treeClass)
 	{
 		Map<String,Map<Integer,KeyPairSearchTree<String>>> map = null;
 		final Map<String,String> pairs=getPrefixedPairs(props,prefix,'/');
@@ -1324,7 +1326,14 @@ public class CWConfig implements Cloneable
 				KeyPairSearchTree<String> tree=portMap.get(from.second);
 				if(tree == null)
 				{
-					tree=new KeyPairSearchTree<String>();
+					try 
+					{
+						tree=treeClass.newInstance();
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+					}
 					portMap.put(from.second, tree);
 				}
 				tree.addEntry(from.third, p.getValue());
@@ -1402,14 +1411,14 @@ public class CWConfig implements Cloneable
 		final Map<String,String> newConverts=getPrefixedPairs(props,"MIMECONVERT",'.');
 		if(newConverts != null)
 			fileConverts=newConverts;
-		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newMounts = getContextMap("MOUNT",props);
+		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newMounts = getContextMap("MOUNT",props,KeyPairSearchTree.class);
 		if(newMounts != null)
 			mounts = newMounts;
-		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newCGIMounts = getContextMap("CGIMOUNT",props);
+		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newCGIMounts = getContextMap("CGIMOUNT",props,KeyPairWildSearchTree.class);
 		if(newCGIMounts != null)
 			cgimnts = newCGIMounts;
 		
-		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newBrowse = getContextMap("BROWSE",props);
+		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newBrowse = getContextMap("BROWSE",props,KeyPairSearchTree.class);
 		if(newBrowse != null)
 			browse = newBrowse;
 		

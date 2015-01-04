@@ -128,13 +128,13 @@ public class CGIProcessor implements HTTPOutputConverter
 		env.put(EnvironmentVariables.REQUEST_URI.name(),request.getUrlPath()+(queryString.length()==0?"":("?"+queryString)));
 		env.put(EnvironmentVariables.REQUEST_METHOD.name(),request.getMethod().toString());
 		env.put(EnvironmentVariables.SCRIPT_NAME.name(),cgiUrl);
-		String scriptFilename=cgiPathInfo;
-		if(cgiPathInfo.length()>0)
+		String scriptFilename=cgiUrl;
+		if(scriptFilename.length()>0)
 		{
-			final Pair<String,String> mountPath=config.getMount(request.getHost(),request.getClientPort(),cgiPathInfo);
+			final Pair<String,String> mountPath=config.getMount(request.getHost(),request.getClientPort(),scriptFilename);
 			if(mountPath != null)
 			{
-				String newFullPath=cgiPathInfo.substring(mountPath.first.length());
+				String newFullPath=scriptFilename.substring(mountPath.first.length());
 				if(newFullPath.startsWith("/")&&mountPath.second.endsWith("/"))
 					newFullPath=newFullPath.substring(1);
 				scriptFilename = (mountPath.second+newFullPath);
@@ -146,8 +146,8 @@ public class CGIProcessor implements HTTPOutputConverter
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_PROTOCOL.name(),"HTTP/"+request.getHttpVer());
-		env.put(EnvironmentVariables.SERVER_SIGNATURE.name(),WebServer.NAME+" Port "+request.getClientPort());
-		env.put(EnvironmentVariables.SERVER_SOFTWARE.name(),WebServer.NAME);
+		env.put(EnvironmentVariables.SERVER_SIGNATURE.name(),WebServer.NAME+" "+WebServer.VERSION+" Port "+request.getClientPort());
+		env.put(EnvironmentVariables.SERVER_SOFTWARE.name(),WebServer.NAME+" "+WebServer.VERSION);
 		env.put(EnvironmentVariables.REDIRECT_STATUS.name(),"200");
 		for(HTTPHeader header : HTTPHeader.values())
 		{
@@ -157,8 +157,6 @@ public class CGIProcessor implements HTTPOutputConverter
 				env.put("HTTP_"+header.name().replace('-','_'),value);
 			}
 		}
-for(EnvironmentVariables vari : EnvironmentVariables.values()) //TODO: BZ: DELME
-	System.out.println("set \""+vari.name()+"="+env.get(vari.name())+"\"");
 		try 
 		{
 			builder.directory(config.getFileManager().createFileFromPath(docRoot));
