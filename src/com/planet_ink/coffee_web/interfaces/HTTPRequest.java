@@ -114,8 +114,6 @@ public interface HTTPRequest
 	
 	/**
 	 * Access the body of the request as an input stream
-	 * The body will be unavailable is already processed
-	 * (ie urlencoded parameters)
 	 * @return the body of the request as an input stream.
 	 */
 	public InputStream getBody();

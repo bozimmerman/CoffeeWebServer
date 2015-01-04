@@ -787,31 +787,31 @@ public class CWHTTPRequest implements HTTPRequest
 			bodyStream = emptyInput;
 		}
 		else // if this entire body is one url-encoded string, parse it into the urlParameters and clear the body
-		if(headers.containsKey(HTTPHeader.CONTENT_TYPE.lowerCaseName()) 
-		&&(headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName()).startsWith("application/x-www-form-urlencoded")))
 		{
-			bodyStream = emptyInput;
-			final String byteStr=new String(buffer.array(),utf8);
-			parseUrlEncodedKeypairs(byteStr);
-			if (isDebugging) debugLogger.finest("Urlencoded data: "+byteStr);
-			buffer=ByteBuffer.wrap(new byte[0]); // free some memory early, why don't ya
-		}
-		else // if this is some sort of multi-part thing, then the entire body is forfeit and MultiPartDatas are generated
-		if(headers.containsKey(HTTPHeader.CONTENT_TYPE.lowerCaseName()) 
-		&&(headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName()).startsWith("multipart/")))
-		{
-			bodyStream = emptyInput;
-			if (isDebugging) debugLogger.finest("Got multipart request");
-			final String boundaryDefStr=headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName());
-			parts = parseMultipartContent(boundaryDefStr, new int[]{0});
-			buffer=ByteBuffer.wrap(new byte[0]); // free some memory early, why don't ya
-		}
-		else // otherwise, this is an unhandled or generic body of data.. prepare the input bodystream
-		{
-			if (isDebugging) debugLogger.finest("Got generic body");
-			buffer.position(0);
-			buffer.limit(buffer.capacity());
 			bodyStream = new ByteArrayInputStream(buffer.array());
+			if(headers.containsKey(HTTPHeader.CONTENT_TYPE.lowerCaseName()) 
+			&&(headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName()).startsWith("application/x-www-form-urlencoded")))
+			{
+				final String byteStr=new String(buffer.array(),utf8);
+				parseUrlEncodedKeypairs(byteStr);
+				if (isDebugging) debugLogger.finest("Urlencoded data: "+byteStr);
+				buffer=ByteBuffer.wrap(new byte[0]); // free some memory early, why don't ya
+			}
+			else // if this is some sort of multi-part thing, then the entire body is forfeit and MultiPartDatas are generated
+			if(headers.containsKey(HTTPHeader.CONTENT_TYPE.lowerCaseName()) 
+			&&(headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName()).startsWith("multipart/")))
+			{
+				if (isDebugging) debugLogger.finest("Got multipart request");
+				final String boundaryDefStr=headers.get(HTTPHeader.CONTENT_TYPE.lowerCaseName());
+				parts = parseMultipartContent(boundaryDefStr, new int[]{0});
+				buffer=ByteBuffer.wrap(new byte[0]); // free some memory early, why don't ya
+			}
+			else // otherwise, this is an unhandled or generic body of data.. prepare the input bodystream
+			{
+				if (isDebugging) debugLogger.finest("Got generic body");
+				buffer.position(0);
+				buffer.limit(buffer.capacity());
+			}
 		}
 		isFinished = true; // by setting this flag, we signal our doneness.
 	}
