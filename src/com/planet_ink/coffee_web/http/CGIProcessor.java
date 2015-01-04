@@ -157,8 +157,6 @@ public class CGIProcessor implements HTTPOutputConverter
 				env.put("HTTP_"+header.name().replace('-','_'),value);
 			}
 		}
-for(EnvironmentVariables vari : EnvironmentVariables.values()) //TODO: BZ: DELME
-	System.out.println("set \""+vari.name()+"="+env.get(vari.name())+"\"");
 		try 
 		{
 			builder.directory(config.getFileManager().createFileFromPath(docRoot));
@@ -173,7 +171,6 @@ for(EnvironmentVariables vari : EnvironmentVariables.values()) //TODO: BZ: DELME
 			{
 				while ((len = bodyIn.read(bytes)) != -1) 
 				{
-System.out.println("wrote: "+new String(bytes,0,len));
 					out.write(bytes, 0, len);
 				}
 			}
