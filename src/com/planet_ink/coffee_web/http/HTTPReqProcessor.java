@@ -499,7 +499,6 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 */
 	protected DataBuffers checkAndExecuteCGI(final String reqPath, final HTTPRequest request, final Map<HTTPHeader, String> headers) throws HTTPException
 	{
-		//TODO: check for and parse mount from config, just like createFile( method calls getMounts()
 		final Pair<String,String> cgiMount=config.getCGIMount(request.getHost(),request.getClientPort(),reqPath);
 		if(cgiMount == null)
 			return null;
