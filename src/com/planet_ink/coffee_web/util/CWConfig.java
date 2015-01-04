@@ -144,6 +144,7 @@ public class CWConfig implements Cloneable
 	private Map<String,Map<Integer,KeyPairSearchTree<ThrottleSpec>>>outs	= new HashMap<String,Map<Integer,KeyPairSearchTree<ThrottleSpec>>>();
 	private Map<String,Map<Integer,KeyPairSearchTree<ChunkSpec>>>	chunks	= new HashMap<String,Map<Integer,KeyPairSearchTree<ChunkSpec>>>();
 	private Map<String,Map<Integer,KeyPairSearchTree<String>>> 		browse	= new HashMap<String,Map<Integer,KeyPairSearchTree<String>>>();
+	private Map<String,Map<Integer,KeyPairSearchTree<String>>> 		cgimnts	= new HashMap<String,Map<Integer,KeyPairSearchTree<String>>>();
 	
 	public enum DupPolicy { ENUMERATE, OVERWRITE }
 	
@@ -478,7 +479,6 @@ public class CWConfig implements Cloneable
 		return null;
 	}
 
-	
 	/**
 	 * return the proper mount for the given host and context and port
 	 * @param host the host name to search for, or "" for all hosts
@@ -489,6 +489,18 @@ public class CWConfig implements Cloneable
 	public final Pair<String,String> getMount(final String host, final int port, final String context)
 	{
 		return this.getContextPair(mounts, host, port, context);
+	}
+
+	/**
+	 * return the proper cgi-enabled mount for the given host and context and port
+	 * @param host the host name to search for, or "" for all hosts
+	 * @param port the port to search for, or -1 for all ports
+	 * @param context the context to search for -- NOT OPTIONAL!
+	 * @return the proper mount for the given host and context and port
+	 */
+	public final Pair<String,String> getCGIMount(final String host, final int port, final String context)
+	{
+		return this.getContextPair(cgimnts, host, port, context);
 	}
 
 	/**
@@ -1393,6 +1405,9 @@ public class CWConfig implements Cloneable
 		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newMounts = getContextMap("MOUNT",props);
 		if(newMounts != null)
 			mounts = newMounts;
+		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newCGIMounts = getContextMap("CGIMOUNT",props);
+		if(newCGIMounts != null)
+			cgimnts = newCGIMounts;
 		
 		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newBrowse = getContextMap("BROWSE",props);
 		if(newBrowse != null)

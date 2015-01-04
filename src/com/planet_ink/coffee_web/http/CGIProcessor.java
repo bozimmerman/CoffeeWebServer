@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+import com.planet_ink.coffee_common.collections.Pair;
 import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_web.http.HTTPException;
 import com.planet_ink.coffee_web.http.HTTPHeader;
@@ -48,13 +49,13 @@ public class CGIProcessor implements HTTPOutputConverter
 		this.docRoot = docRoot;
 	}
 
-	//http://www.comptechdoc.org/independent/web/cgi/cgimanual/cgivars.html
 	private static enum EnvironmentVariables 
 	{ 
 		AUTH_TYPE,
 		CONTENT_LENGTH,
 		CONTENT_TYPE,
 		GATEWAY_INTERFACE,
+		DOCUMENT_ROOT,
 		HTTP_,
 		PATH_INFO,
 		PATH_TRANSLATED,
@@ -63,12 +64,15 @@ public class CGIProcessor implements HTTPOutputConverter
 		REMOTE_HOST,
 		REMOTE_IDENT,
 		REMOTE_USER,
+		REQUEST_URI,
 		REQUEST_METHOD,
-		SCRIPT_NAME,  // just the stuff after php.exe -- the 'script" 
-		SCRIPT_FILENAME, // full local path to stuff after php.exe -- the "script"
+		SCRIPT_NAME,
+		SCRIPT_FILENAME,
+		SERVER_ADMIN,
 		SERVER_NAME,
 		SERVER_PORT,
 		SERVER_PROTOCOL,
+		SERVER_SIGNATURE, 
 		SERVER_SOFTWARE, 
 		REDIRECT_STATUS
 	}
@@ -104,20 +108,41 @@ public class CGIProcessor implements HTTPOutputConverter
 		final String contentType= request.getHeader(HTTPHeader.CONTENT_TYPE.toString());
 		if(contentType != null)
 			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
+		final Pair<String,String> rootMount = config.getMount(request.getHost(), request.getClientPort(), "/");
+		if(rootMount != null)
+			env.put(EnvironmentVariables.DOCUMENT_ROOT.name(),new File(rootMount.second).getAbsolutePath());
 		env.put(EnvironmentVariables.GATEWAY_INTERFACE.name(),"CGI/1.1");
 		env.put(EnvironmentVariables.PATH_INFO.name(),cgiPathInfo);
 		env.put(EnvironmentVariables.PATH_TRANSLATED.name(),"HTTP://"+request.getHost()+":"+request.getClientPort()+cgiPathInfo);
-		env.put(EnvironmentVariables.QUERY_STRING.name(),request.getQueryString());
+		String queryString = request.getQueryString();
+		if(queryString.startsWith("?"))
+			queryString=queryString.substring(1);
+		env.put(EnvironmentVariables.QUERY_STRING.name(),queryString);
 		env.put(EnvironmentVariables.REMOTE_ADDR.name(),request.getClientAddress().toString());
 		//env.put(EnvironmentVariables.REMOTE_HOST.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_IDENT.name(),null);
 		//env.put(EnvironmentVariables.REMOTE_USER.name(),null);
+		env.put(EnvironmentVariables.REQUEST_URI.name(),request.getUrlPath()+(queryString.length()==0?"":("?"+queryString)));
 		env.put(EnvironmentVariables.REQUEST_METHOD.name(),request.getMethod().toString());
 		env.put(EnvironmentVariables.SCRIPT_NAME.name(),cgiUrl);
-		env.put(EnvironmentVariables.SCRIPT_FILENAME.name(),cgiUrl);
+		String scriptFilename=cgiPathInfo;
+		if(cgiPathInfo.length()>0)
+		{
+			final Pair<String,String> mountPath=config.getMount(request.getHost(),request.getClientPort(),cgiPathInfo);
+			if(mountPath != null)
+			{
+				String newFullPath=cgiPathInfo.substring(mountPath.first.length());
+				if(newFullPath.startsWith("/")&&mountPath.second.endsWith("/"))
+					newFullPath=newFullPath.substring(1);
+				scriptFilename = (mountPath.second+newFullPath);
+			}
+		}
+		env.put(EnvironmentVariables.SCRIPT_FILENAME.name(),new File(scriptFilename.replace('/', config.getFileManager().getFileSeparator())).getAbsolutePath());
+		env.put(EnvironmentVariables.SERVER_ADMIN.name(),"unknonwn@nowhere.com"); //TODO: add this to config -- nice idea
 		env.put(EnvironmentVariables.SERVER_NAME.name(),request.getHost());
 		env.put(EnvironmentVariables.SERVER_PORT.name(),""+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_PROTOCOL.name(),"HTTP/"+request.getHttpVer());
+		env.put(EnvironmentVariables.SERVER_SIGNATURE.name(),WebServer.NAME+" Port "+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_SOFTWARE.name(),WebServer.NAME);
 		env.put(EnvironmentVariables.REDIRECT_STATUS.name(),"200");
 		for(HTTPHeader header : HTTPHeader.values())
@@ -126,7 +151,6 @@ public class CGIProcessor implements HTTPOutputConverter
 			if(value != null)
 			{
 				env.put("HTTP_"+header.name().replace('-','_'),value);
-System.out.println("set \"HTTP_"+header.name().replace('-','_')+"="+value+"\"");
 			}
 		}
 for(EnvironmentVariables vari : EnvironmentVariables.values())
@@ -149,14 +173,11 @@ for(EnvironmentVariables vari : EnvironmentVariables.values())
 				}
 			}
 			out.close();
-			//TODO: Remove StringBuilder str=new StringBuilder("");
 			while ((len = in.read(bytes)) != -1) 
 			{
 				bout.write(bytes, 0, len);
-				//TODO: Remove str.append(new String(bytes,0,len));
 			}
 			int retCode = process.waitFor();
-			//TODO: Remove System.out.println(retCode+"/"+str.toString());
 			if(retCode != 0)
 			{
 				final InputStream errin = process.getErrorStream();
