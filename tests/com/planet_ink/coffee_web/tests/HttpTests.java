@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.junit.Test;
 
-import com.planet_ink.coffee_web.http.HTTPHeader;
+import com.planet_ink.coffee_web.http.CWHTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.servlets.HelloWorldServlet;
 import com.planet_ink.coffee_common.logging.Log;
@@ -182,15 +182,15 @@ public class HttpTests
 		{
 			httpClient = Client.create();
 			WebResource webResource = httpClient.resource("http://localhost:8080/ranged.txt");
-			ClientResponse webResponse = webResource.header(HTTPHeader.ACCEPT_ENCODING.toString(),"gzip").get(ClientResponse.class);
+			ClientResponse webResponse = webResource.header(CWHTTPHeader.ACCEPT_ENCODING.toString(),"gzip").get(ClientResponse.class);
 			if(webResponse.getStatus() != Status.OK.getStatusCode())
 			{
 				fail("FAIL, web status = "+webResponse.getStatus());
 			}
 			else
-			if(!findHeaderVal(webResponse, HTTPHeader.CONTENT_ENCODING.toString(), "gzip"))
+			if(!findHeaderVal(webResponse, CWHTTPHeader.CONTENT_ENCODING.toString(), "gzip"))
 			{
-				fail("FAIL, encoding = "+getFirstHeaderVal(webResponse, HTTPHeader.CONTENT_ENCODING.toString()));
+				fail("FAIL, encoding = "+getFirstHeaderVal(webResponse, CWHTTPHeader.CONTENT_ENCODING.toString()));
 			}
 			else
 			{

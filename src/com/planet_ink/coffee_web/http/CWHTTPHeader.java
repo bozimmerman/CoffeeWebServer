@@ -1,5 +1,6 @@
 package com.planet_ink.coffee_web.http;
 
+import com.planet_ink.coffee_web.interfaces.HTTPHeader;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 
 /*
@@ -24,7 +25,7 @@ limitations under the License.
  * for easily constructing the "header line" used to output them.
  * @author Bo Zimmerman
  */
-public enum HTTPHeader
+public enum CWHTTPHeader implements HTTPHeader
 {
 	ACCEPT("Accept"),
 	STATUS("Status"),
@@ -67,14 +68,14 @@ public enum HTTPHeader
 	private String defaultValue;
 	private String keyName;
 
-	private HTTPHeader(String name, String defaultValue)
+	private CWHTTPHeader(String name, String defaultValue)
 	{
 		this.name=name;
 		this.defaultValue=defaultValue;
 		this.keyName=name.toLowerCase();
 	}
 
-	private HTTPHeader(String name)
+	private CWHTTPHeader(String name)
 	{
 		this(name,"");
 	}
@@ -111,14 +112,14 @@ public enum HTTPHeader
 	 * @param str the string to match
 	 * @return the HTTPHeader object
 	 */
-	public static HTTPHeader find(final String str)
+	public static CWHTTPHeader find(final String str)
 	{
 		try
 		{
-			return HTTPHeader.valueOf(str.toUpperCase().replace('-','_'));
+			return CWHTTPHeader.valueOf(str.toUpperCase().replace('-','_'));
 		}
 		catch(Exception e) { }
-		for(HTTPHeader head : HTTPHeader.values())
+		for(CWHTTPHeader head : CWHTTPHeader.values())
 			if(head.lowerCaseName().equalsIgnoreCase(str))
 				return head;
 		return null;
@@ -181,13 +182,14 @@ public enum HTTPHeader
 	{
 		return make(value) + EOLN;
 	}
+
 	/**
 	 * Set the static keep alive header from your configuration
 	 * @param header
 	 */
 	public static void setKeepAliveHeader(String header)
 	{
-		HTTPHeader.keepAliveHeader=header;
+		CWHTTPHeader.keepAliveHeader=header;
 	}
 	/**
 	 * Return the statically defined keep alive header line
@@ -195,6 +197,104 @@ public enum HTTPHeader
 	 */
 	public static String getKeepAliveHeader()
 	{
-		return HTTPHeader.keepAliveHeader;
+		return CWHTTPHeader.keepAliveHeader;
+	}
+	
+	/**
+	 * If an HTTPHeader is something other than the official
+	 * ones encased in the CWHTTPHeader class, then this method
+	 * will allow you to make a customized one.
+	 * @param name the key name of the header to return
+	 * @return the HTTPHeader object
+	 */
+	public static HTTPHeader createNew(final String name)
+	{
+		final String keyName = name.toLowerCase();
+		return new HTTPHeader()
+		{
+			/**
+			 * Return the right and good outputtable name of this header
+			 * @return the disaplayable name
+			 */
+			@Override
+			public String toString()
+			{
+				return name;
+			}
+			/**
+			 * Return the default value for this header, if one is defined, or ""
+			 * @return the default value of this header
+			 */
+			public String getDefaultValue()
+			{
+				return "";
+			}
+			/**
+			 * Return a lowercase form of this headers name as used in normalized map lookups
+			 * @return lowercase name of this header
+			 */
+			public String lowerCaseName()
+			{
+				return keyName;
+			}
+			
+			/**
+			 * Return a header line with the given value
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String make(String value)
+			{
+				return name + ": " + value;
+			}
+			/**
+			 * Return a header line with the given value
+			 * and an end-of-line character attached
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String makeLine(String value)
+			{
+				return make(value) + EOLN;
+			}
+			/**
+			 * Return a header line with the given value
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String make(int value)
+			{
+				return name + ": " + value;
+			}
+			/**
+			 * Return a header line with the given value
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String make(long value)
+			{
+				return name + ": " + value;
+			}
+			/**
+			 * Return a header line with the given value
+			 * and an end-of-line character attached
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String makeLine(int value)
+			{
+				return make(value) + EOLN;
+			}
+			/**
+			 * Return a header line with the given value
+			 * and an end-of-line character attached
+			 * @param value the value to assign to the header
+			 * @return the name plus the value
+			 */
+			public String makeLine(long value)
+			{
+				return make(value) + EOLN;
+			}
+		};
 	}
 }

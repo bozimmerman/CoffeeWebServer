@@ -15,6 +15,7 @@ import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.FileCacheManager;
 import com.planet_ink.coffee_web.interfaces.FileManager;
 import com.planet_ink.coffee_web.interfaces.HTTPFileGetter;
+import com.planet_ink.coffee_web.interfaces.HTTPHeader;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
@@ -131,7 +132,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			compressedBytes=config.getFileCache().compressFileData(file, FileCacheManager.CompressionType.GZIP, buffers);
 		}
 		if(compressedBytes != buffers)
-			headers.put(HTTPHeader.CONTENT_ENCODING,compressorName);
+			headers.put(CWHTTPHeader.CONTENT_ENCODING,compressorName);
 		return compressedBytes;
 	}
 	
@@ -218,7 +219,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	private ByteBuffer generateStandardHeaderResponse(HTTPRequest request, HTTPStatus status, Map<HTTPHeader,String> headers, DataBuffers response) throws HTTPException
 	{
 		final StringBuilder str=new StringBuilder("");
-		final String overrideStatus = headers.get(HTTPHeader.STATUS);
+		final String overrideStatus = headers.get(CWHTTPHeader.STATUS);
 		if(overrideStatus != null)
 			str.append("HTTP/").append(request.getHttpVer()).append(" ").append(overrideStatus);
 		else
@@ -226,22 +227,22 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		str.append(EOLN);
 		for(final HTTPHeader header : headers.keySet())
 			str.append(header.makeLine(headers.get(header)));
-		if((!headers.containsKey(HTTPHeader.TRANSFER_ENCODING))
-		||(!headers.get(HTTPHeader.TRANSFER_ENCODING).equals("chunked")))
+		if((!headers.containsKey(CWHTTPHeader.TRANSFER_ENCODING))
+		||(!headers.get(CWHTTPHeader.TRANSFER_ENCODING).equals("chunked")))
 		{
 			if(response != null)
-				str.append(HTTPHeader.CONTENT_LENGTH.makeLine(response.getLength()));
+				str.append(CWHTTPHeader.CONTENT_LENGTH.makeLine(response.getLength()));
 			else
-				str.append(HTTPHeader.CONTENT_LENGTH.makeLine(0));
+				str.append(CWHTTPHeader.CONTENT_LENGTH.makeLine(0));
 		}
 		if(response != null)
-			str.append(HTTPHeader.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
+			str.append(CWHTTPHeader.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
 		if(config.isDebugging())
 			config.getLogger().finer("Response: "+str.toString().replace('\r', ' ').replace('\n', ' '));
 		str.append(HTTPIOHandler.SERVER_HEADER);
 		str.append(HTTPIOHandler.CONN_HEADER);
-		str.append(HTTPHeader.getKeepAliveHeader());
-		str.append(HTTPHeader.DATE.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
+		str.append(CWHTTPHeader.getKeepAliveHeader());
+		str.append(CWHTTPHeader.DATE.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
 		str.append(HTTPIOHandler.RANGE_HEADER);
 		str.append(EOLN);
 		return ByteBuffer.wrap(str.toString().getBytes());
@@ -281,7 +282,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 */
 	private void confirmMimeType(HTTPRequest request, final MIMEType mimeType) throws HTTPException
 	{
-		final String mimeMaskStr = request.getHeader(HTTPHeader.ACCEPT.lowerCaseName());
+		final String mimeMaskStr = request.getHeader(CWHTTPHeader.ACCEPT.lowerCaseName());
 		if(mimeMaskStr!=null)
 		{
 			final String[] mimeMasks = mimeMaskStr.split(",");
@@ -380,7 +381,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 */
 	private String[] generateETagMarker(HTTPRequest request)
 	{
-		String possibleETag=request.getHeader(HTTPHeader.IF_NONE_MATCH.lowerCaseName());
+		String possibleETag=request.getHeader(CWHTTPHeader.IF_NONE_MATCH.lowerCaseName());
 		if(possibleETag != null)
 		{
 			possibleETag=possibleETag.trim();
@@ -472,7 +473,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 */
 	private void checkIfModifiedSince(HTTPRequest request, final DataBuffers buffers) throws HTTPException
 	{
-		final String lastModifiedSince=request.getHeader(HTTPHeader.IF_MODIFIED_SINCE.lowerCaseName()); 
+		final String lastModifiedSince=request.getHeader(CWHTTPHeader.IF_MODIFIED_SINCE.lowerCaseName()); 
 		if(lastModifiedSince != null)
 		{
 			try
@@ -667,7 +668,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 						if(!request.getUrlPath().endsWith("/"))
 						{
 							final HTTPException movedException=HTTPException.standardException(HTTPStatus.S301_MOVED_PERMANENTLY);
-							movedException.getErrorHeaders().put(HTTPHeader.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
+							movedException.getErrorHeaders().put(CWHTTPHeader.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
 							throw movedException;
 						}
 						pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
@@ -684,7 +685,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					case POST:
 					{
 						final MIMEType mimeType = MIMEType.getMIMEType(pageFile.getName());
-						extraHeaders.put(HTTPHeader.CONTENT_TYPE, mimeType.getType());
+						extraHeaders.put(CWHTTPHeader.CONTENT_TYPE, mimeType.getType());
 						confirmMimeType(request,mimeType);
 						
 						final Class<? extends HTTPOutputConverter> converterClass=config.getConverters().findConverter(mimeType);
@@ -696,9 +697,9 @@ public class HTTPReqProcessor implements HTTPFileGetter
 							{
 								HTTPOutputConverter converter;
 								converter = converterClass.newInstance();
-								extraHeaders.put(HTTPHeader.CACHE_CONTROL, "no-cache");
+								extraHeaders.put(CWHTTPHeader.CACHE_CONTROL, "no-cache");
 								final long dateTime=System.currentTimeMillis();
-								extraHeaders.put(HTTPHeader.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
+								extraHeaders.put(CWHTTPHeader.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
 								buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), dateTime, true);
 								buffers = handleEncodingRequest(request, null, buffers, extraHeaders);
 							}
@@ -713,7 +714,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 							final String[] eTagMarker =generateETagMarker(request);
 							buffers=config.getFileCache().getFileData(pageFile, eTagMarker);
 							if((eTagMarker[0]!=null)&&(eTagMarker[0].length()>0))
-								extraHeaders.put(HTTPHeader.ETAG, eTagMarker[0]);
+								extraHeaders.put(CWHTTPHeader.ETAG, eTagMarker[0]);
 							checkIfModifiedSince(request,buffers);
 							buffers = handleEncodingRequest(request, pageFile, buffers, extraHeaders);
 						}
@@ -726,7 +727,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 						if(fullRange != null)
 						{
 							responseStatus = HTTPStatus.S206_PARTIAL_CONTENT;
-							extraHeaders.put(HTTPHeader.CONTENT_RANGE, "bytes "+fullRange[0]+"-"+fullRange[1]+"/"+fullSize);
+							extraHeaders.put(CWHTTPHeader.CONTENT_RANGE, "bytes "+fullRange[0]+"-"+fullRange[1]+"/"+fullSize);
 						}
 						break;
 					}
@@ -746,7 +747,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				if((chunkSpec != null) && (buffers.getLength() >= chunkSpec.getMinFileSize())) 
 				{
 					chunkedSize = chunkSpec.getChunkSize(); // set chunking flag
-					extraHeaders.put(HTTPHeader.TRANSFER_ENCODING, "chunked");
+					extraHeaders.put(CWHTTPHeader.TRANSFER_ENCODING, "chunked");
 				}
 			}
 			
@@ -765,7 +766,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			default:
 			{
 				final HTTPException exception = new HTTPException(HTTPStatus.S405_METHOD_NOT_ALLOWED);
-				exception.getErrorHeaders().put(HTTPHeader.ALLOW, HTTPMethod.getAllowedList());
+				exception.getErrorHeaders().put(CWHTTPHeader.ALLOW, HTTPMethod.getAllowedList());
 				throw exception;
 			}
 			}

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.io.*;
 
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
+import com.planet_ink.coffee_web.interfaces.HTTPHeader;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.server.WebServer;
 import com.planet_ink.coffee_web.util.CWDataBuffers;
@@ -274,8 +275,8 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 				final StringBuilder s=new StringBuilder(currentReq.getMethod().toString()).append(' ').append(urlPage)
 							.append(" HTTP/").append(currentReq.getHttpVer()).append(EOLN);
 				for(final String headerKey : currentReq.getAllHeaderReferences(true))
-					if(headerKey.equalsIgnoreCase(HTTPHeader.HOST.name()))
-						s.append(HTTPHeader.HOST.name()).append(": ").append(address.getHost()).append(':').append(address.getPort()).append(EOLN);
+					if(headerKey.equalsIgnoreCase(CWHTTPHeader.HOST.name()))
+						s.append(CWHTTPHeader.HOST.name()).append(": ").append(address.getHost()).append(':').append(address.getPort()).append(EOLN);
 					else
 						s.append(headerKey).append(": ").append(currentReq.getHeader(headerKey.toLowerCase().trim())).append(EOLN);
 				if(config.isDebugging())
@@ -504,7 +505,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 									state=ParseState.DONE;
 								}
 								else
-								if("chunked".equalsIgnoreCase(currentReq.getHeader(HTTPHeader.TRANSFER_ENCODING.lowerCaseName())))
+								if("chunked".equalsIgnoreCase(currentReq.getHeader(CWHTTPHeader.TRANSFER_ENCODING.lowerCaseName())))
 								{
 									state=ParseState.CHUNKED_HEADER_INLINE;
 									buffer = currentReq.setToReceiveContentChunkedBody(0); // prepare for chunk length/headers
@@ -514,7 +515,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 								else
 								{
 									//the headers will tell you what to do next "BODY" is too vague
-									final String contentLengthStr=currentReq.getHeader(HTTPHeader.CONTENT_LENGTH.lowerCaseName());
+									final String contentLengthStr=currentReq.getHeader(CWHTTPHeader.CONTENT_LENGTH.lowerCaseName());
 									if(contentLengthStr!=null)
 									{
 										try
@@ -860,7 +861,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 									+" \""+currentReq.getFullRequest()+" \" "+processor.getLastHttpStatusCode()+" "+bufs.getLength())).append("\n");
 							writeBytesToChannel(bufs);
 							// after output, prepare for a second request on this channel
-							final String closeHeader = currentReq.getHeader(HTTPHeader.CONNECTION.lowerCaseName()); 
+							final String closeHeader = currentReq.getHeader(CWHTTPHeader.CONNECTION.lowerCaseName()); 
 							if((closeHeader != null) && (closeHeader.trim().equalsIgnoreCase("close")))
 								closeRequested = true;
 							else
@@ -884,7 +885,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 					// before a finish is malformed and needs a closed connection.
 					if(currentReq.isFinished())
 					{
-						final String closeHeader = currentReq.getHeader(HTTPHeader.CONNECTION.lowerCaseName()); 
+						final String closeHeader = currentReq.getHeader(CWHTTPHeader.CONNECTION.lowerCaseName()); 
 						if((closeHeader != null) && (closeHeader.trim().equalsIgnoreCase("close")))
 							closeRequested = true;
 						else

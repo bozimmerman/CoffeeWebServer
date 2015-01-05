@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
+import com.planet_ink.coffee_web.interfaces.HTTPHeader;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
@@ -49,7 +50,7 @@ public class HTTPException extends Exception
 	private final Map<HTTPHeader,String>errorHeaders = new Hashtable<HTTPHeader,String>(); // any optional/extraneous headers to send back
 	private final boolean    			isDebugging;
 	private final Logger    			debugLogger;
-	private final CWConfig			config;
+	private final CWConfig				config;
 	private final static String			EOLN		 = HTTPIOHandler.EOLN;
 	
 	/**
@@ -134,8 +135,8 @@ public class HTTPException extends Exception
 		final Map<HTTPHeader,String> headers=getErrorHeaders();
 		str.append(HTTPIOHandler.SERVER_HEADER);
 		str.append(HTTPIOHandler.CONN_HEADER);
-		str.append(HTTPHeader.getKeepAliveHeader());
-		str.append(HTTPHeader.DATE.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
+		str.append(CWHTTPHeader.getKeepAliveHeader());
+		str.append(CWHTTPHeader.DATE.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
 		
 		DataBuffers finalBody=null;
 		if((body.length()==0)
@@ -151,7 +152,7 @@ public class HTTPException extends Exception
 				final MIMEType mimeType=MIMEType.getMIMEType(config.getErrorPage());
 				if(mimeType!=null)
 				{
-					headers.put(HTTPHeader.CONTENT_TYPE, mimeType.getType());
+					headers.put(CWHTTPHeader.CONTENT_TYPE, mimeType.getType());
 					final Class<? extends HTTPOutputConverter> converterClass=config.getConverters().findConverter(mimeType);
 					if(converterClass != null)
 					{
@@ -180,12 +181,12 @@ public class HTTPException extends Exception
 		}
 		if(finalBody.getLength()>0)
 		{
-			if(!headers.containsKey(HTTPHeader.CONTENT_TYPE.lowerCaseName()))
-				str.append(HTTPHeader.CONTENT_TYPE.makeLine(MIMEType.html.getType()));
-			str.append(HTTPHeader.CONTENT_LENGTH.makeLine(finalBody.getLength()));
+			if(!headers.containsKey(CWHTTPHeader.CONTENT_TYPE.lowerCaseName()))
+				str.append(CWHTTPHeader.CONTENT_TYPE.makeLine(MIMEType.html.getType()));
+			str.append(CWHTTPHeader.CONTENT_LENGTH.makeLine(finalBody.getLength()));
 		}
 		else
-			str.append(HTTPHeader.CONTENT_LENGTH.makeLine(0));
+			str.append(CWHTTPHeader.CONTENT_LENGTH.makeLine(0));
 		str.append(EOLN);
 		finalBody.insertTop(str.toString().getBytes(), 0, false);
 		return finalBody;

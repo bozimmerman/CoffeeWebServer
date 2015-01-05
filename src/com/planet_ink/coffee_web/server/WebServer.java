@@ -11,7 +11,7 @@ import javax.net.ssl.SSLContext;
 
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.MimeConverterManager;
-import com.planet_ink.coffee_web.http.HTTPHeader;
+import com.planet_ink.coffee_web.http.CWHTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPReader;
 import com.planet_ink.coffee_web.http.HTTPReqProcessor;
 import com.planet_ink.coffee_web.http.HTTPSReader;
@@ -518,8 +518,8 @@ public class WebServer extends Thread
 		config.setConverters(mimeConverterManager);
 		config.setFileGetter(fileGetter);
 		
-		HTTPHeader.setKeepAliveHeader(HTTPHeader.KEEP_ALIVE.makeLine(
-										String.format(HTTPHeader.KEEP_ALIVE_FMT, 
+		CWHTTPHeader.setKeepAliveHeader(CWHTTPHeader.KEEP_ALIVE.makeLine(
+										String.format(CWHTTPHeader.KEEP_ALIVE_FMT, 
 										Integer.valueOf(config.getRequestMaxAliveSecs()),
 										Integer.valueOf(config.getRequestMaxPerConn()))));
 		return config;
