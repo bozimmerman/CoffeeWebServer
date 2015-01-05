@@ -1329,14 +1329,17 @@ public class CWConfig implements Cloneable
 					try 
 					{
 						tree=treeClass.newInstance();
+						portMap.put(from.second, tree);
 					} 
 					catch (Exception e) 
 					{
 						e.printStackTrace();
 					}
-					portMap.put(from.second, tree);
 				}
-				tree.addEntry(from.third, p.getValue());
+				if(tree != null)
+				{
+					tree.addEntry(from.third, p.getValue());
+				}
 			}
 		}
 		return map;
