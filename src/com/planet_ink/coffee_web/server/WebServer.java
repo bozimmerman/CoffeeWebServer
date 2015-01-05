@@ -519,9 +519,9 @@ public class WebServer extends Thread
 		config.setFileGetter(fileGetter);
 		
 		HTTPHeader.Common.setKeepAliveHeader(HTTPHeader.Common.KEEP_ALIVE.makeLine(
-										String.format(HTTPHeader.Common.KEEP_ALIVE_FMT, 
-										Integer.valueOf(config.getRequestMaxAliveSecs()),
-										Integer.valueOf(config.getRequestMaxPerConn()))));
+											 String.format(HTTPHeader.Common.KEEP_ALIVE_FMT, 
+											 Integer.valueOf(config.getRequestMaxAliveSecs()),
+											 Integer.valueOf(config.getRequestMaxPerConn()))));
 		return config;
 	}
 	

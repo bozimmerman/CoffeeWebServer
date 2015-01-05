@@ -441,7 +441,7 @@ public class CWConfig implements Cloneable
 	private final Pair<String,String> getContextPair(final Map<String,Map<Integer,KeyPairSearchTree<String>>> map, 
 													 final String host, final int port, final String context)
 	{
-		Map<Integer,? extends KeyPairSearchTree<String>> portMap=map.get(host);
+		Map<Integer,KeyPairSearchTree<String>> portMap=map.get(host);
 		if(portMap != null)
 		{
 			KeyPairSearchTree<String> contexts=portMap.get(Integer.valueOf(port));
