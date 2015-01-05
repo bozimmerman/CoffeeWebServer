@@ -2,6 +2,10 @@
 
     *. Support for CGIs.  Tested with Mediawiki for PHP in Windows
 
+    *. HTTPHeader is now an interface.  No more unknown headers!
+
+    *. MIME types can now be added to in the ini file.
+
 2014-9-16   2.2 Bo Zimmerman <bo@zimmers.net>
 
     * Support for output throttling added, ini file configured.

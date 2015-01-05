@@ -47,7 +47,7 @@ public class MimeConverter implements MimeConverterManager
 		requestStats = new Hashtable<Class<? extends HTTPOutputConverter>, RequestStats>();
 		for(final String mimeTypeName : config.getFileConverts().keySet())
 		{
-			final MIMEType mimeType=MIMEType.valueOf(mimeTypeName);
+			final MIMEType mimeType=MIMEType.All.getValueOf(mimeTypeName);
 			String className=config.getFileConverts().get(mimeTypeName);
 			if(className.indexOf('.')<0)
 				className="com.planet_ink.coffee_web.converters."+className;

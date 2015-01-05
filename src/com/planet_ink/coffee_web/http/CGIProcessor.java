@@ -11,7 +11,6 @@ import java.util.Map;
 import com.planet_ink.coffee_common.collections.Pair;
 import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_web.http.HTTPException;
-import com.planet_ink.coffee_web.http.CWHTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
@@ -103,10 +102,10 @@ public class CGIProcessor implements HTTPOutputConverter
 		final ProcessBuilder builder = new ProcessBuilder(executeablePath);
 		final Map<String, String> env = builder.environment();
 		env.remove(EnvironmentVariables.AUTH_TYPE.name());
-		final String contentLength= request.getHeader(CWHTTPHeader.CONTENT_LENGTH.toString());
+		final String contentLength= request.getHeader(HTTPHeader.Common.CONTENT_LENGTH.toString());
 		if(contentLength != null)
 			env.put(EnvironmentVariables.CONTENT_LENGTH.name(),contentLength);
-		final String contentType= request.getHeader(CWHTTPHeader.CONTENT_TYPE.toString());
+		final String contentType= request.getHeader(HTTPHeader.Common.CONTENT_TYPE.toString());
 		if(contentType != null)
 			env.put(EnvironmentVariables.CONTENT_TYPE.name(),contentType);
 		final Pair<String,String> rootMount = config.getMount(request.getHost(), request.getClientPort(), "/");
@@ -150,7 +149,7 @@ public class CGIProcessor implements HTTPOutputConverter
 		env.put(EnvironmentVariables.SERVER_SIGNATURE.name(),HTTPIOHandler.SERVER_HEADER+" Port "+request.getClientPort());
 		env.put(EnvironmentVariables.SERVER_SOFTWARE.name(),WebServer.NAME+" "+WebServer.VERSION);
 		env.put(EnvironmentVariables.REDIRECT_STATUS.name(),"200");
-		for(CWHTTPHeader header : CWHTTPHeader.values())
+		for(HTTPHeader header : HTTPHeader.Common.values())
 		{
 			final String value=request.getHeader(header.name());
 			if(value != null)

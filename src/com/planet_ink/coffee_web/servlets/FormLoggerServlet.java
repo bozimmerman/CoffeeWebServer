@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import com.planet_ink.coffee_web.http.CWHTTPHeader;
+import com.planet_ink.coffee_web.http.HTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPMethod;
 import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.interfaces.SimpleServlet;
@@ -50,7 +50,7 @@ public class FormLoggerServlet implements SimpleServlet
 			request.getLogger().info("Url Field \""+field+"\": "+request.getUrlParameter(field));
 		int contentLength = 0;
 		try {
-			contentLength = Integer.parseInt(request.getHeader(CWHTTPHeader.CONTENT_LENGTH.lowerCaseName()));
+			contentLength = Integer.parseInt(request.getHeader(HTTPHeader.Common.CONTENT_LENGTH.lowerCaseName()));
 		} catch (Exception e) { }
 		if(contentLength > 0) {
 			try {

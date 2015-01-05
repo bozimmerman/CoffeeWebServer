@@ -1212,7 +1212,7 @@ public class CWConfig implements Cloneable
 			for(String type : typesSet)
 			{
 				MIMEType mtype = null;
-				for(MIMEType m : MIMEType.values())
+				for(MIMEType m : MIMEType.All.getValues())
 					if((m.name().equals(type))
 					||(type.endsWith("*") && m.name().startsWith(type.substring(0,type.length()-1)))
 					||(type.startsWith("*") && m.name().endsWith(type.substring(1)))
@@ -1225,7 +1225,7 @@ public class CWConfig implements Cloneable
 					}
 				if(mtype == null)
 				{
-					for(MIMEType m : MIMEType.values())
+					for(MIMEType m : MIMEType.All.getValues())
 						if((m.getExt().equals(type))
 						||(type.endsWith("*") && m.getExt().startsWith(type.substring(0,type.length()-1)))
 						||(type.startsWith("*") && m.getExt().endsWith(type.substring(1))))
@@ -1417,11 +1417,20 @@ public class CWConfig implements Cloneable
 		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newCGIMounts = getContextMap("CGIMOUNT",props,KeyPairWildSearchTree.class);
 		if(newCGIMounts != null)
 			cgimnts = newCGIMounts;
-		
+
 		final Map<String,Map<Integer,KeyPairSearchTree<String>>> newBrowse = getContextMap("BROWSE",props,KeyPairSearchTree.class);
 		if(newBrowse != null)
 			browse = newBrowse;
-		
+
+		final Map<String,String> extraMimeTypes=getPrefixedPairs(props,"MIME",'.');
+		if(extraMimeTypes != null)
+			for(String key : extraMimeTypes.keySet())
+			{
+				final String type=extraMimeTypes.get(key);
+				if(type.indexOf('/')>0)
+					MIMEType.All.addMIMEType(key.toLowerCase(), type);
+			}
+
 		final Map<String,String> newForwards=getPrefixedPairs(props,"FORWARD",'/');
 		if(newForwards != null)
 		{

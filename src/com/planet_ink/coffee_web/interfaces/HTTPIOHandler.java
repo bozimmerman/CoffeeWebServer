@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import com.planet_ink.coffee_web.http.CWHTTPHeader;
+import com.planet_ink.coffee_web.http.HTTPHeader;
 import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.server.WebServer;
 
@@ -38,9 +38,9 @@ limitations under the License.
 public interface HTTPIOHandler extends Runnable
 {
 	public static final String 		 EOLN 			= "\r\n";			// standard EOLN for http protocol
-	public static final String 		 SERVER_HEADER 	= CWHTTPHeader.SERVER.makeLine("CoffeeWebServer/"+WebServer.VERSION);
-	public static final String 		 CONN_HEADER  	= CWHTTPHeader.CONNECTION.makeLine("Keep-Alive");
-	public static final String 		 RANGE_HEADER  	= CWHTTPHeader.ACCEPT_RANGES.makeLine("bytes");
+	public static final String 		 SERVER_HEADER 	= HTTPHeader.Common.SERVER.makeLine("CoffeeWebServer/"+WebServer.VERSION);
+	public static final String 		 CONN_HEADER  	= HTTPHeader.Common.CONNECTION.makeLine("Keep-Alive");
+	public static final String 		 RANGE_HEADER  	= HTTPHeader.Common.ACCEPT_RANGES.makeLine("bytes");
 	public static final DateFormat 	 DATE_FORMAT	= new SimpleDateFormat("EEE, dd MMM yyyy kk:mm:ss zzz");
 	public static final byte[]		 CONT_RESPONSE  = ("HTTP/1.1 "+HTTPStatus.S100_CONTINUE.getStatusCode()+" CONTINUE" + EOLN + EOLN).getBytes(); 
 
