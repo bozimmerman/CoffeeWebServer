@@ -68,7 +68,7 @@ public class HTTPReader implements HTTPIOHandler, Runnable
 
 	private volatile long				idleTime		= System.currentTimeMillis();  // the last time this handler went idle
 	
-	private volatile CWHTTPRequest		currentReq;			  	  // the parser and pojo of the current request
+	private volatile CWHTTPRequest		currentReq;			  	// the parser and pojo of the current request
 	private volatile ParseState			currentState	= ParseState.REQ_INLINE;	// the current parse state of this request
 	private volatile int				nextChunkSize	= 0;
 	
