@@ -247,7 +247,7 @@ public class WebServer extends Thread
 				key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
 				executor.execute(handler);
 			}
-			else //ADDED for test
+			else
 			{
 				key.cancel();
 				handlers.remove(handler);
