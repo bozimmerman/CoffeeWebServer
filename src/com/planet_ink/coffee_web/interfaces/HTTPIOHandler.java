@@ -9,7 +9,7 @@ import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.server.WebServer;
 
 /*
-Copyright 2012-2015 Bo Zimmerman
+Copyright 2012-2016 Bo Zimmerman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ public interface HTTPIOHandler extends Runnable
 	 * @return number of bytes written
 	 * @throws IOException
 	 */
+	@Deprecated
 	public int writeBlockingBytesToChannel(final DataBuffers buffer) throws IOException;
 	
 	/**

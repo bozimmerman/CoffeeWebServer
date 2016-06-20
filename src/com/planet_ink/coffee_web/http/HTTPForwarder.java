@@ -14,7 +14,7 @@ import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
-Copyright 2012-2015 Bo Zimmerman
+Copyright 2012-2016 Bo Zimmerman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -175,6 +175,7 @@ public class HTTPForwarder implements HTTPIOHandler, Runnable
 	 * @throws IOException
 	 */
 	@Override
+	@Deprecated
 	public int writeBlockingBytesToChannel(final DataBuffers buffers) throws IOException
 	{
 		synchronized(webServerChannel)

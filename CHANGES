@@ -1,6 +1,7 @@
 2016-?-??   2.4 Bo Zimmerman <bo@zimmers.net>
 
     *. Support for 101/Protocol Switching through exceptions 
+    *. SSL Fix
 
 2015-1-05   2.3 Bo Zimmerman <bo@zimmers.net>
 

@@ -1,7 +1,15 @@
 package com.planet_ink.coffee_web.interfaces;
 
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.planet_ink.coffee_web.http.HTTPMethod;
+import com.planet_ink.coffee_web.http.MultiPartData;
+
 /*
-   Copyright 2012-2015 Bo Zimmerman
+   Copyright 2012-2016 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

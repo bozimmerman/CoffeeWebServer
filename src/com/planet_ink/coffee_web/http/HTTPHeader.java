@@ -3,7 +3,7 @@ package com.planet_ink.coffee_web.http;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 
 /*
-Copyright 2012-2015 Bo Zimmerman
+Copyright 2012-2016 Bo Zimmerman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -90,7 +90,6 @@ public interface HTTPHeader
 	 */
 	public String name();
 	
-	
 	/**
 	 * Enum of all the publicaly recognized headers.
 	 * @author Bo Zimmerman
@@ -129,7 +128,10 @@ public interface HTTPHeader
 		PRAGMA("Pragma"),
 		UPGRADE("Upgrade"),
 		SEC_WEBSOCKET_ACCEPT("Sec-WebSocket-Accept"),
-		X_FRAME_OPTIONS("X-Frame-Options")
+		SEC_WEBSOCKET_VERSION("Sec-WebSocket-Version"),
+		SEC_WEBSOCKET_LOCATION("Sec-WebSocket-Location"),
+		X_FRAME_OPTIONS("X-Frame-Options"),
+		ORIGIN("Origin")
 		;
 		public static final String		 		KEEP_ALIVE_FMT	= "timeout=%d, max=%d";
 		private static String					keepAliveHeader =KEEP_ALIVE_FMT;
