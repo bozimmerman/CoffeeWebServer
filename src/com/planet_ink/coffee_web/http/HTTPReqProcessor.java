@@ -28,25 +28,25 @@ import com.planet_ink.coffee_web.util.RequestStats;
 import com.planet_ink.coffee_common.collections.Pair;
 
 /*
-Copyright 2012-2017 Bo Zimmerman
+   Copyright 2012-2017 Bo Zimmerman
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
 	   http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 /**
  * Processes a completed http request and generates the output.
  * Designed at the moment for a synchronous process.  
- * To go async, the first problem to solve is guarenteeing that
+ * To go async, the first problem to solve is guaranteeing that
  * reads continue, but writes happen sequentially.  Perhaps
  * this is done with a queue of some sort?  A runnable set
  * to kick off on another thread when the first request is ready...?
@@ -552,9 +552,9 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	}
 	
 	/**
-	 * Retreives a buffer set containing the possibly cached contents of the file. 
+	 * Retrieves a buffer set containing the possibly cached contents of the file. 
 	 * This can trigger file reads, servlet calls and other ways
-	 * of generating body data.  Apparantly UNUSED internally, it must
+	 * of generating body data.  Apparently UNUSED internally, it must
 	 * be for embedded usage.
 	 * 
 	 * @param request the request to generate output for
@@ -649,7 +649,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					return executeServlet(request,servletClass);
 				}
 			}
-			
+		
 			final Map<HTTPHeader,String> extraHeaders=new HashMap<HTTPHeader, String>();
 			HTTPStatus responseStatus = HTTPStatus.S200_OK;
 			// not a servlet, so it must be a file path
@@ -665,7 +665,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					if(!request.getUrlPath().endsWith("/"))
 					{
 						final HTTPException movedException=HTTPException.standardException(HTTPStatus.S301_MOVED_PERMANENTLY);
-						movedException.getErrorHeaders().put(HTTPHeader.Common.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
+										movedException.getErrorHeaders().put(HTTPHeader.Common.LOCATION, request.getFullHost() + request.getUrlPath() + "/");
 						throw movedException;
 					}
 					pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
@@ -696,7 +696,8 @@ public class HTTPReqProcessor implements HTTPFileGetter
 							converter = converterClass.newInstance();
 							extraHeaders.put(HTTPHeader.Common.CACHE_CONTROL, "no-cache");
 							final long dateTime=System.currentTimeMillis();
-							extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
+							if(dateTime >= 0)
+								extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
 							buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), dateTime, true);
 							buffers = handleEncodingRequest(request, null, buffers, extraHeaders);
 						}

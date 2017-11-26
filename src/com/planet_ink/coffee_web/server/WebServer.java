@@ -27,19 +27,19 @@ import com.planet_ink.coffee_web.util.CWThreadExecutor;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
-Copyright 2012-2017 Bo Zimmerman
+   Copyright 2012-2017 Bo Zimmerman
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
 	   http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 
 /**
@@ -59,6 +59,7 @@ public class WebServer extends Thread
 	static { try { VERSION=Double.parseDouble(POMVERSION); } catch(final Exception e){ VERSION=0.0;} }
 	
 	private volatile boolean	  	shutdownRequested	= false;// notice of external shutdown request
+	private volatile String	  		lastErrorMsg		= "";	// spam prevention for error reporting
 	private Selector			  	servSelector 		= null; // server io selector
 	private final CWThreadExecutor 	executor;					// request handler thread pool
 	private Thread				  	timeoutThread		= null; // thread to timeout connected but idle channels
@@ -204,7 +205,13 @@ public class WebServer extends Thread
 						}
 						catch(Exception e)
 						{
-							config.getLogger().severe(e.toString());
+							if(!lastErrorMsg.equals(e.toString()) && (e.toString()!=null))
+							{
+								config.getLogger().log(Level.SEVERE, e.toString(), e);
+								lastErrorMsg = e.toString();
+							}
+							else
+								config.getLogger().severe(e.toString());
 						}
 					}
 				}
@@ -263,14 +270,20 @@ public class WebServer extends Thread
 						}
 						catch(CancelledKeyException x)
 						{
-							handlers.remove(handler);
+							synchronized(handlers) // synched because you can't iterate and modify, and because its a linkedlist
+							{
+								handlers.remove(handler);
+							}
 						}
 					}
 				}
 				else
 				{
 					key.cancel();
-					handlers.remove(handler);
+					synchronized(handlers) // synched because you can't iterate and modify, and because its a linkedlist
+					{
+						handlers.remove(handler);
+					}
 				}
 			}
 			catch(Exception e)
@@ -298,11 +311,23 @@ public class WebServer extends Thread
 		synchronized(handlers)
 		{
 			// remove any stray handlers from time to time
-			for(final Iterator<HTTPIOHandler> i = handlers.iterator(); i.hasNext(); )
+			if(handlers.size() == 0)
+				return;
+			final Iterator<HTTPIOHandler> i;
+			try
 			{
-				final HTTPIOHandler handler=i.next();
+				i=handlers.iterator();
+			}
+			catch(java.lang.IndexOutOfBoundsException x)
+			{
+				handlers.clear();
+				throw x;
+			}
+			for(; i.hasNext(); )
+			{
 				try
 				{
+					final HTTPIOHandler handler=i.next();
 					if(handler.isCloseable())
 					{
 						if(handlersToShutDown == null)
