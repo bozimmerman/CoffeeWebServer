@@ -30,7 +30,7 @@ import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_common.logging.Log.Type;
 
 /*
-   Copyright 2012-2017 Bo Zimmerman
+   Copyright 2012-2018 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -176,6 +176,8 @@ public class HTTPReader implements HTTPIOHandler, ProtocolHandler, Runnable
 			catch(final Exception e){}
 			if(forwarder!=null)
 				forwarder.closeChannels();
+			if(this.protocolHandler != this)
+				this.protocolHandler.closeAndWait();
 		}
 	}
 	
