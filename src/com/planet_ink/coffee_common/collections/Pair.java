@@ -20,11 +20,11 @@ limitations under the License.
  * A trivial pojo for grouping pairs of things, usually for collections.
  * @author Bo Zimmerman
  */
-public class Pair<T,K> 
+public class Pair<T,K>
 {
 	public T first;
 	public K second;
-	public Pair(T frst, K scnd)
+	public Pair(final T frst, final K scnd)
 	{
 		first=frst;
 		second=scnd;

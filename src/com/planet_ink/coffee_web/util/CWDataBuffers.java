@@ -27,11 +27,11 @@ import com.planet_ink.coffee_web.interfaces.DataBuffers;
    limitations under the License.
 */
 
-public class CWDataBuffers implements DataBuffers 
+public class CWDataBuffers implements DataBuffers
 {
 	private static final byte[] EOLNBYTES = "\r\n".getBytes();
 	private static final byte[] EOCHUNKBYTES = "0\r\n\r\n".getBytes();
-	
+
 	private static class FileEntry
 	{
 		public final Object data;
@@ -39,7 +39,7 @@ public class CWDataBuffers implements DataBuffers
 		public final long endPos;
 		public long length;
 		public final boolean isChunkable;
-		public FileEntry(Object o, long start, long endPos, boolean isChunkable)
+		public FileEntry(final Object o, final long start, final long endPos, final boolean isChunkable)
 		{
 			this.data=o;
 			this.startPos=Long.valueOf(start);
@@ -48,7 +48,7 @@ public class CWDataBuffers implements DataBuffers
 			this.isChunkable=isChunkable;
 		}
 	}
-	
+
 	private LinkedList<FileEntry> 		list;
 	private final LinkedList<Closeable> closers;
 	private byte[]						buffer=null;
@@ -56,7 +56,7 @@ public class CWDataBuffers implements DataBuffers
 	private int							chunkSize;
 	private boolean						chunkFixed = false;
 	private long						lastModifiedTime=0;
-	
+
 	public CWDataBuffers()
 	{
 		list=new LinkedList<FileEntry>();
@@ -81,8 +81,8 @@ public class CWDataBuffers implements DataBuffers
 		add(file, lastModifiedTime, isChunkable);
 		created();
 	}
-	
-	private ByteBuffer doChunk(ByteBuffer topBuffer)
+
+	private ByteBuffer doChunk(final ByteBuffer topBuffer)
 	{
 		if(!chunkFixed)
 		{
@@ -92,7 +92,7 @@ public class CWDataBuffers implements DataBuffers
 		if(topBuffer.remaining() <= chunkSize)
 		{
 			list.removeFirst();
-			final String sizeStr = Integer.toHexString(topBuffer.remaining()); 
+			final String sizeStr = Integer.toHexString(topBuffer.remaining());
 			final ByteBuffer newBuf=ByteBuffer.allocate(topBuffer.remaining()+ sizeStr.length() + EOLNBYTES.length + EOLNBYTES.length);
 			newBuf.put(sizeStr.getBytes());
 			newBuf.put(EOLNBYTES);
@@ -104,7 +104,7 @@ public class CWDataBuffers implements DataBuffers
 		}
 		else
 		{
-			final String sizeStr = Integer.toHexString(chunkSize); 
+			final String sizeStr = Integer.toHexString(chunkSize);
 			final ByteBuffer newBuf=ByteBuffer.allocate(chunkSize + sizeStr.length() + EOLNBYTES.length + EOLNBYTES.length);
 			final byte[] readBuf = new byte[chunkSize];
 			topBuffer.get(readBuf);
@@ -117,7 +117,7 @@ public class CWDataBuffers implements DataBuffers
 			return newBuf;
 		}
 	}
-	
+
 	@SuppressWarnings("resource")
 	private ByteBuffer tryNext()
 	{
@@ -220,7 +220,7 @@ public class CWDataBuffers implements DataBuffers
 		}
 		super.finalize();
 	}
-	
+
 	@Override
 	public void close()
 	{
@@ -232,7 +232,7 @@ public class CWDataBuffers implements DataBuffers
 		list.clear();
 		length=0;
 	}
-	
+
 	@Override
 	public void add(final ByteBuffer buf, final long lastModifiedTime, final boolean isChunkable)
 	{
@@ -273,19 +273,19 @@ public class CWDataBuffers implements DataBuffers
 		}
 		catch(final IOException e){ }
 	}
-	
+
 	@Override
 	public ByteBuffer splitTopBuffer(final int sizeOfTopBuffer)
 	{
 		if((list.size()==0) || (sizeOfTopBuffer <= 0))
 			throw new IllegalArgumentException();
 		final boolean isChunkable=list.get(0).isChunkable;
-		ByteBuffer topB = next();
+		final ByteBuffer topB = next();
 		if(topB.remaining() < sizeOfTopBuffer)
 			throw new IllegalArgumentException();
 		final byte[] newBytes = new byte[sizeOfTopBuffer];
 		topB.get(newBytes);
-		ByteBuffer newTopB=ByteBuffer.wrap(newBytes);
+		final ByteBuffer newTopB=ByteBuffer.wrap(newBytes);
 		list.addFirst(new FileEntry(newTopB,0,newTopB.limit()-newTopB.position(),isChunkable));
 		return next();
 	}
@@ -306,7 +306,7 @@ public class CWDataBuffers implements DataBuffers
 		if((lastModifiedTime != this.lastModifiedTime) && (lastModifiedTime > 0))
 			this.lastModifiedTime=lastModifiedTime;
 	}
-	
+
 	public void addFlush(final CWDataBuffers buffers)
 	{
 		this.length += buffers.getLength();
@@ -340,17 +340,17 @@ public class CWDataBuffers implements DataBuffers
 		close();
 		return ByteBuffer.wrap(bout.toByteArray());
 	}
-	
+
 	@Override public long getLength(){ return length; }
-	
+
 	@Override
 	public Date getLastModified()
 	{
 		if(this.lastModifiedTime==0)
 			return new Date();
-		return new Date(this.lastModifiedTime); 
+		return new Date(this.lastModifiedTime);
 	}
-	
+
 	@Override
 	public void setRanges(final List<long[]> ranges)
 	{
@@ -408,7 +408,7 @@ public class CWDataBuffers implements DataBuffers
 		this.length=newLen;
 		list=ranged;
 	}
-	
+
 	@Override
 	public void setChunked(final int chunkSize)
 	{

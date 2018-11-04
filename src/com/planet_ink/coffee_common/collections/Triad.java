@@ -15,10 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-public class Triad<T,K,L> extends Pair<T,K> 
+public class Triad<T,K,L> extends Pair<T,K>
 {
 	public L third;
-	public Triad(T frst, K scnd, L thrd)
+	public Triad(final T frst, final K scnd, final L thrd)
 	{
 		super(frst,scnd);
 		third=thrd;

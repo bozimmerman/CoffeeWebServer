@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  * @author Bo Zimmerman
  *
  */
-public class CWThreadExecutor extends ThreadPoolExecutor 
+public class CWThreadExecutor extends ThreadPoolExecutor
 {
 	protected HashMap<Runnable,RunWrap>active 		= new HashMap<Runnable,RunWrap>();
 	protected long  				 	 timeoutMillis;
@@ -45,19 +45,19 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 	protected static class CMLinkedBlockingQueue<E> extends ArrayBlockingQueue<E>{
 		private static final long serialVersionUID = -4357809818979881831L;
 		public CWThreadExecutor executor = null;
-		public CMLinkedBlockingQueue(int capacity) { super(capacity);}
-		@Override public boolean offer(E o)
+		public CMLinkedBlockingQueue(final int capacity) { super(capacity);}
+		@Override public boolean offer(final E o)
 		{
 			final int allWorkingThreads = executor.getActiveCount() + super.size();
 			return (allWorkingThreads < executor.getPoolSize()) && super.offer(o);
 		}
 	}
-	
-	public CWThreadExecutor(String poolName,
-							CWConfig config,
-							int corePoolSize, int maximumPoolSize,
-							long keepAliveTime, TimeUnit unit, 
-							long timeoutSecs, int queueSize) 
+
+	public CWThreadExecutor(final String poolName,
+							final CWConfig config,
+							final int corePoolSize, final int maximumPoolSize,
+							final long keepAliveTime, final TimeUnit unit,
+							final long timeoutSecs, final int queueSize)
 	{
 		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, new CMLinkedBlockingQueue<Runnable>(queueSize));
 		((CMLinkedBlockingQueue<Runnable>)getQueue()).executor=this;
@@ -68,7 +68,7 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 		this.logger=config.getLogger();
 		setRejectedExecutionHandler(new RejectedExecutionHandler()
 		{
-			@Override public void rejectedExecution(Runnable r, ThreadPoolExecutor executor)
+			@Override public void rejectedExecution(final Runnable r, final ThreadPoolExecutor executor)
 			{
 				try { executor.getQueue().put(r); } catch (final InterruptedException e) { throw new RejectedExecutionException(e); }
 			}
@@ -76,8 +76,8 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 	}
 
 	@Override
-	protected void beforeExecute(Thread t, Runnable r) 
-	{ 
+	protected void beforeExecute(final Thread t, final Runnable r)
+	{
 		synchronized(active)
 		{
 			try
@@ -90,10 +90,10 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 			}
 		}
 	}
-	
+
 	@Override
-	protected void afterExecute(Runnable r, Throwable t) 
-	{ 
+	protected void afterExecute(final Runnable r, final Throwable t)
+	{
 		synchronized(active)
 		{
 			try
@@ -111,17 +111,17 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 	public int getActiveCount()
 	{
 		return active.size();
-	} 
-	
+	}
+
 	@Override
-	public void execute(Runnable r)
+	public void execute(final Runnable r)
 	{
 		try
 		{
 			if(this.getQueue().contains(r))
 				return;
 			super.execute(r);
-			
+
 			// an optomization for logging purposes.  When my smtp server gets hit
 			// by a spam-bot, the log fills up my hard drive.  this helps prevent that.
 			if((rejectCount>0)&&(System.currentTimeMillis()-lastRejectTime)>5000)
@@ -140,7 +140,7 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 			rejectCount++;
 		}
 	}
-	
+
 	/**
 	 * Scans the list of active running threads/runnables for ones that have
 	 * been active longer than permitted.  It will attempt to kill those, returning
@@ -150,7 +150,7 @@ public class CWThreadExecutor extends ThreadPoolExecutor
 	 * @param maxToKill the maximum number of threads to kill
 	 * @return the runnable/thread combo that was killed.
 	 */
-	public Collection<RunWrap> getTimeoutOutRuns(int maxToKill)
+	public Collection<RunWrap> getTimeoutOutRuns(final int maxToKill)
 	{
 		final LinkedList<RunWrap> timedOut=new LinkedList<RunWrap>();
 		if(timeoutMillis<=0) return timedOut;

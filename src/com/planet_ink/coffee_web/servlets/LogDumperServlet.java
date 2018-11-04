@@ -31,7 +31,7 @@ import com.planet_ink.coffee_web.interfaces.SimpleServletResponse;
 */
 
 /**
- * Dumps the web server log into a page 
+ * Dumps the web server log into a page
  * @author Bo Zimmerman
  *
  */
@@ -39,7 +39,7 @@ public class LogDumperServlet implements SimpleServlet
 {
 
 	@Override
-	public void doGet(SimpleServletRequest request, SimpleServletResponse response)
+	public void doGet(final SimpleServletRequest request, final SimpleServletResponse response)
 	{
 		try
 		{
@@ -74,7 +74,7 @@ public class LogDumperServlet implements SimpleServlet
 				{
 					try
 					{
-						bs.close(); 
+						bs.close();
 				}
 					catch(final Exception e) {} // java really needs an " i don't care " syntax for exception handling
 			}
@@ -91,7 +91,7 @@ public class LogDumperServlet implements SimpleServlet
 	}
 
 	@Override
-	public void doPost(SimpleServletRequest request, SimpleServletResponse response)
+	public void doPost(final SimpleServletRequest request, final SimpleServletResponse response)
 	{
 		response.setStatusCode(HTTPStatus.S405_METHOD_NOT_ALLOWED.getStatusCode());
 	}
@@ -102,7 +102,7 @@ public class LogDumperServlet implements SimpleServlet
 	}
 
 	@Override
-	public void service(HTTPMethod method, SimpleServletRequest request, SimpleServletResponse response)
+	public void service(final HTTPMethod method, final SimpleServletRequest request, final SimpleServletResponse response)
 	{
 		if(method!=HTTPMethod.GET)
 			response.setStatusCode(HTTPStatus.S405_METHOD_NOT_ALLOWED.getStatusCode());

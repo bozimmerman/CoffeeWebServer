@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 */
 
 /**
- * One of the oldest classes in CoffeeMud -- ye olde logger.  
+ * One of the oldest classes in CoffeeMud -- ye olde logger.
  * Features include date formatting, the standard set of log channels,
  * plus optional numeric levels within those in case some kinds of info
  * are more important than others.  Also manages multiple log files if
@@ -39,11 +39,11 @@ public class Log extends java.util.logging.Logger
 {
 	/** final date format for headers */
 	private static final SimpleDateFormat dateFormat=new SimpleDateFormat("yyyyMMdd.HHmm.ss");
-	
+
 	/** SPACES for headers */
 	private static final String SPACES="                                                                                                ";
 	private static final String SPACES15=SPACES.substring(0,15);
-	
+
 	private PrintWriter 		fileOutWriter[]	= null; /**	always to "log" */
 	private int					numberOfFWLogs	= 1;
 	private final PrintWriter 	systemOutWriter	= new PrintWriter(System.out,true); /** always to systemout */
@@ -54,13 +54,13 @@ public class Log extends java.util.logging.Logger
 	private final Map<Type,Conf>CONFS			= new Hashtable<Type,Conf>();
 	private final Map<PrintWriter,long[]> WRITTEN	= new Hashtable<PrintWriter,long[]>();
 	private static final Type[] TYPE_LEVEL_MAP  = new Type[1001];
-	
+
 	/**
 	 * The internally used targets for a log
 	 * @author Bo Zimmerman
 	 */
 	private static enum Target { ON, OFF, BOTH, FILE, OWNFILE }
-	
+
 	/**
 	 * Internal configuration object.
 	 * @author Bo Zimmerman
@@ -70,16 +70,16 @@ public class Log extends java.util.logging.Logger
 		public final Target target;
 		public int maxLevel, maxLogs, maxLines, maxBytes;
 		public final PrintWriter[][] writers = new PrintWriter[10][];
-		public Conf(Target target, int maxLevel, int maxLogs, int maxLines, int maxBytes) 
-		{ 
-			this.target=target; 
-			this.maxLevel=maxLevel; 
-			this.maxLogs=maxLogs; 
-			this.maxLines=maxLines; 
+		public Conf(final Target target, final int maxLevel, final int maxLogs, final int maxLines, final int maxBytes)
+		{
+			this.target=target;
+			this.maxLevel=maxLevel;
+			this.maxLogs=maxLogs;
+			this.maxLines=maxLines;
 			this.maxBytes=maxBytes;
 		}
 	}
-	
+
 	/**
 	 * The various log types supported by this logger.  When using the native interface, think of them
 	 * as separate channels that can be independenly directed.  When using the java Logger, they are
@@ -88,30 +88,30 @@ public class Log extends java.util.logging.Logger
 	 * @author Bo Zimmerman
 	 *
 	 */
-	public static enum Type 
-	{ 
-		error, 
-		help, 
-		debug, 
-		info, 
-		warning, 
-		kills, 
-		combat, 
+	public static enum Type
+	{
+		error,
+		help,
+		debug,
+		info,
+		warning,
+		kills,
+		combat,
 		access;
 		final String sixChars;
-		
-		private Type() 
-		{ 
-			sixChars=(this.toString()+SPACES).substring(0,5)+" "; 
+
+		private Type()
+		{
+			sixChars=(this.toString()+SPACES).substring(0,5)+" ";
 		}
-		
-		public final String getSixChars() 
-		{ 
-			return sixChars; 
+
+		public final String getSixChars()
+		{
+			return sixChars;
 		}
 	}
-	
-	static 
+
+	static
 	{
 		for(int i=0;i<TYPE_LEVEL_MAP.length;i++)
 			if(i<=Level.FINEST.intValue())
@@ -123,9 +123,9 @@ public class Log extends java.util.logging.Logger
 			else if(i<=Level.WARNING.intValue()) TYPE_LEVEL_MAP[i]=Type.warning;
 			else if(i<=Level.SEVERE.intValue()) TYPE_LEVEL_MAP[i]=Type.error;
 	}
-	
+
 	/**
-	 * Constructor for a log object.  Will assign the constructed logger to the 
+	 * Constructor for a log object.  Will assign the constructed logger to the
 	 * current thread group by taking the first character of the thread group
 	 * name as its code.  If all threadgroups have same first character, they will
 	 * all share a log object.  Either way, this needs to be called to construct
@@ -138,22 +138,22 @@ public class Log extends java.util.logging.Logger
 		if(logs[threadCode]==null)
 			logs[threadCode]=this;
 	}
-	
+
 	/**
 	 * Returns the log object for the current threadgroup, or null if unassigned.
 	 * @return the Log object, or null
 	 */
 	private static final Log l()
-	{ 
+	{
 		return logs[Thread.currentThread().getThreadGroup().getName().charAt(0)];
 	}
-	
+
 	/**
 	 * Returns the log object for the given threadgroup code, or null if unassigned.
 	 * @param threadCode the threadgroup code to check
 	 * @return the Log object, or null
 	 */
-	public static final Log l(char threadCode)
+	public static final Log l(final char threadCode)
 	{
 		return logs[threadCode];
 	}
@@ -167,11 +167,11 @@ public class Log extends java.util.logging.Logger
 	public static final Log instance()
 	{
 		Log log=l();
-		if(log==null) 
+		if(log==null)
 			log=new Log();
 		return log;
 	}
-	
+
 	/**
 	 * Forces the creation of a new, unconfigured Log object for the current thread group.
 	 * @return the new Log object
@@ -182,14 +182,14 @@ public class Log extends java.util.logging.Logger
 		logs[threadCode]=new Log();
 		return l();
 	}
-	
+
 	/**
 	 * Forces the current thread group to share a Log object with the one at the given
 	 * threadcode.  The one at the threadcode should already have been created before
 	 * calling.
 	 * @param threadCode the threadcode with an existing log
 	 */
-	public static final void shareWith(final char threadCode) 
+	public static final void shareWith(final char threadCode)
 	{
 		final char tc=Thread.currentThread().getThreadGroup().getName().charAt(0);
 		if(logs[threadCode]!=null)
@@ -245,7 +245,7 @@ public class Log extends java.util.logging.Logger
 	{
 		return getTarget(type) != Target.OFF;
 	}
-	
+
 	/**
 	 * Given a log type, return the default log file name or null.
 	 * @param type the local log type
@@ -264,7 +264,7 @@ public class Log extends java.util.logging.Logger
 			return null;
 		}
 	}
-	
+
 	/**
 	 * When a log is determined to be full, this method closes out the old one,
 	 * opens the new one, and designates the new one as ready to be written to
@@ -303,7 +303,7 @@ public class Log extends java.util.logging.Logger
 		}
 		return writer;
 	}
-	
+
 	/**
 	 * Writes the given full log string to the given writer.  If the number of lines in the
 	 * given config warrants a log-role, then it is done.
@@ -334,7 +334,7 @@ public class Log extends java.util.logging.Logger
 		}
 		return writer;
 	}
-	
+
 	/**
 	 * Returns an appropriate writer for the given ON, OFF, FILE, or OWNFILE
  	 *
@@ -369,7 +369,7 @@ public class Log extends java.util.logging.Logger
 			break;
 		case OWNFILE:
 			{
-				try 
+				try
 				{
 					final FileOutputStream fileStream=this.openLogFile(logName+"_"+type.toString().toLowerCase(), false, config.maxLogs);
 					final PrintWriter[] writer=new PrintWriter[]{new PrintWriter(fileStream,true)};
@@ -377,7 +377,7 @@ public class Log extends java.util.logging.Logger
 						writers[i]=writer;
 					if(!WRITTEN.containsKey(writer))
 						WRITTEN.put(writer[0], new long[]{0,0});
-				} 
+				}
 				catch (final IOException e)
 				{
 					e.printStackTrace();
@@ -406,7 +406,7 @@ public class Log extends java.util.logging.Logger
 	 * @param defaultNumberOfLogs default number of log files
 	 * @return Conf the config
 	 */
-	private final Conf makeConfig(final Type type, String code, int defaultNumberOfLogs)
+	private final Conf makeConfig(final Type type, String code, final int defaultNumberOfLogs)
 	{
 		if((code==null)||(code.trim().length()==0))
 			return new Conf(Target.OFF,0,1,0,0);
@@ -431,7 +431,7 @@ public class Log extends java.util.logging.Logger
 			if(Character.isDigit(numStr.charAt(0)))
 			{
 				x=0;
-				while((x<numStr.length())&&(Character.isDigit(numStr.charAt(x)))) 
+				while((x<numStr.length())&&(Character.isDigit(numStr.charAt(x))))
 				{
 					x++;
 				}
@@ -474,7 +474,7 @@ public class Log extends java.util.logging.Logger
 		else
 			return new Conf(t,maxLevel,this.numberOfFWLogs,0,0);
 	}
-	
+
 	/**
 	 * Returns an appropriate writer for the given ON, OFF, FILE, or OWNFILE
  	 *
@@ -536,7 +536,7 @@ public class Log extends java.util.logging.Logger
 	{
 		if(logName.toLowerCase().endsWith(".log")||logName.toLowerCase().endsWith(".txt"))
 			logName=logName.substring(0,logName.length()-4);
-		
+
 		// initializes the logging objects
 		if((numberOfLogs>1) && (!append))
 		{
@@ -548,7 +548,7 @@ public class Log extends java.util.logging.Logger
 					f.delete();
 			}
 			catch(final Exception e){}
-			
+
 			for(int i=numberOfLogs-1;i>0;i--)
 			{
 				final String inum=(i>0)?(""+i):"";
@@ -568,7 +568,7 @@ public class Log extends java.util.logging.Logger
 			System.setErr(new PrintStream(fileStream));
 		return fileStream;
 	}
-	
+
 
 	/**
 	* Start all of the log files in the info temp directory
@@ -586,7 +586,7 @@ public class Log extends java.util.logging.Logger
 		}
 		final File F=new File(logFilePath);
 		final File parentFile=F.getParentFile();
-		if(parentFile!=null) 
+		if(parentFile!=null)
 			this.logPath=parentFile;
 		this.logName=F.getName();
 		this.LOGNAME=logName.toUpperCase().trim();
@@ -620,7 +620,7 @@ public class Log extends java.util.logging.Logger
 		 */
 		public void close();
 	}
-	
+
 	/**
 	 * Returns number of lines in the log file, if any.
 	 * @return a number >=0
@@ -634,8 +634,8 @@ public class Log extends java.util.logging.Logger
 			final BufferedReader reader = new BufferedReader(F);
 			String line="";
 			while((line!=null)&&(reader.ready()))
-			{ 
-				line=reader.readLine(); 
+			{
+				line=reader.readLine();
 				num++;
 			}
 			reader.close();
@@ -646,7 +646,7 @@ public class Log extends java.util.logging.Logger
 		}
 		return num;
 	}
-	
+
 	/**
 	 * Returns an internally managed log reader class to make
 	 * reading lines from the log slightly easier
@@ -699,7 +699,7 @@ public class Log extends java.util.logging.Logger
 			}
 		};
 	}
-	
+
 	/**
 	 * Returns the contents of the log file as a StringBuffer, if it exists
 	 * @return the contents of the log file, or an empty stringbuffer
@@ -717,7 +717,7 @@ public class Log extends java.util.logging.Logger
 		}
 		return buf;
 	}
-	
+
 	/**
 	* Start all of the log files
 	*
@@ -728,8 +728,8 @@ public class Log extends java.util.logging.Logger
 	{
 		return logPath.getAbsolutePath();
 	}
-	
-	
+
+
 	/**
 	* Will be used to create a standardized log header for file logs
  	*
@@ -759,9 +759,9 @@ public class Log extends java.util.logging.Logger
  	* Since no priority is given, priority is set to lowest possible.
 	* @param message The message to print
 	*/
-	public static final void infoOut(final String message) 
-	{ 
-		infoOut(Thread.currentThread().getName(),message); 
+	public static final void infoOut(final String message)
+	{
+		infoOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -772,8 +772,8 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void sysOut(final String message)
-	{ 
-		infoOut(message); 
+	{
+		infoOut(message);
 	}
 
 	/**
@@ -784,8 +784,8 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void debugOut(final String message)
-	{ 
-		debugOut(Thread.currentThread().getName(),message); 
+	{
+		debugOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -796,8 +796,8 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void errOut(final String message)
-	{ 
-		errOut(Thread.currentThread().getName(),message); 
+	{
+		errOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -808,8 +808,8 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void warnOut(final String message)
-	{ 
-		warnOut(Thread.currentThread().getName(),message); 
+	{
+		warnOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -819,9 +819,9 @@ public class Log extends java.util.logging.Logger
  	* Since no priority is given, priority is set to lowest possible.
 	* @param message The message to print
 	*/
-	public static final void helpOut(final String message) 
-	{ 
-		helpOut(Thread.currentThread().getName(),message); 
+	public static final void helpOut(final String message)
+	{
+		helpOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -831,9 +831,9 @@ public class Log extends java.util.logging.Logger
  	* Since no priority is given, priority is set to lowest possible.
 	* @param message The message to print
 	*/
-	public static final void killsOut(final String message) 
-	{ 
-		killsOut(Thread.currentThread().getName(),message); 
+	public static final void killsOut(final String message)
+	{
+		killsOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -843,9 +843,9 @@ public class Log extends java.util.logging.Logger
  	* Since no priority is given, priority is set to lowest possible.
 	* @param message The message to print
 	*/
-	public static final void combatOut(final String message) 
-	{ 
-		combatOut(Thread.currentThread().getName(),message); 
+	public static final void combatOut(final String message)
+	{
+		combatOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -855,9 +855,9 @@ public class Log extends java.util.logging.Logger
  	* Since no priority is given, priority is set to lowest possible.
 	* @param message The message to print
 	*/
-	public static final void accessOut(final String message) 
-	{ 
-		accessOut(Thread.currentThread().getName(),message); 
+	public static final void accessOut(final String message)
+	{
+		accessOut(Thread.currentThread().getName(),message);
 	}
 
 	/**
@@ -868,7 +868,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void sysOut(final String module, final String message)
-	{ 
+	{
 		infoOut(module,message);
 	}
 
@@ -880,7 +880,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void infoOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.info,module,message,Integer.MIN_VALUE);
 	}
 
@@ -892,7 +892,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void errOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.error,module,message,Integer.MIN_VALUE);
 	}
 
@@ -904,7 +904,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void warnOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.warning,module,message,Integer.MIN_VALUE);
 	}
 
@@ -916,7 +916,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void debugOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.debug,module,message,Integer.MIN_VALUE);
 	}
 
@@ -928,7 +928,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void helpOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.help,module,message,Integer.MIN_VALUE);
 	}
 
@@ -940,7 +940,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void killsOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.kills,module,message,Integer.MIN_VALUE);
 	}
 
@@ -952,7 +952,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void combatOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.combat,module,message,Integer.MIN_VALUE);
 	}
 
@@ -964,7 +964,7 @@ public class Log extends java.util.logging.Logger
 	* @param message The message to print
 	*/
 	public static final void accessOut(final String module, final String message)
-	{ 
+	{
 		l().standardOut(Type.access,module,message,Integer.MIN_VALUE);
 	}
 
@@ -976,7 +976,7 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void debugOut(final String module, final Throwable e)
-	{ 
+	{
 		l().shortExOut(Type.debug,module,Integer.MIN_VALUE,e);
 	}
 
@@ -988,7 +988,7 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void errOut(final String module, final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,module,Integer.MIN_VALUE,e);
 	}
 
@@ -1000,7 +1000,7 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void warnOut(final String module, final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,module,Integer.MIN_VALUE,e);
 	}
 
@@ -1012,7 +1012,7 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void debugOut(final Throwable e)
-	{ 
+	{
 		l().shortExOut(Type.debug,Thread.currentThread().getName(),Integer.MIN_VALUE,e);
 	}
 
@@ -1024,10 +1024,10 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void errOut(final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,Thread.currentThread().getName(),Integer.MIN_VALUE,e);
 	}
-	
+
 	/**
 	* Sends the given exception to the warning channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1036,10 +1036,10 @@ public class Log extends java.util.logging.Logger
 	* @param e The exception to send out the stack and message of
 	*/
 	public static final void warnOut(final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,Thread.currentThread().getName(),Integer.MIN_VALUE,e);
 	}
-	
+
 	/**
 	 * Sends the given line to the info channel, if appropriate to do so,
 	 * whether its to System.out, a file, both, or neither.
@@ -1051,7 +1051,7 @@ public class Log extends java.util.logging.Logger
 	{
 		l().rawStandardOut(Type.info,message,Integer.MIN_VALUE);
 	}
-	
+
 	/**
 	* Sends the given message to the info channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1059,11 +1059,11 @@ public class Log extends java.util.logging.Logger
 	* @param message the base message to send to the log
 	* @param priority the priority level to give to this message
 	*/
-	public static final void infoOut(final String message, final int priority) 
-	{ 
-		infoOut(Thread.currentThread().getName(),message,priority); 
+	public static final void infoOut(final String message, final int priority)
+	{
+		infoOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the info channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1072,10 +1072,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void sysOut(final String message, final int priority)
-	{ 
-		infoOut(message,priority); 
+	{
+		infoOut(message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the debug channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1084,10 +1084,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void debugOut(final String message, final int priority)
-	{ 
-		debugOut(Thread.currentThread().getName(),message,priority); 
+	{
+		debugOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the error channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1096,10 +1096,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void errOut(final String message, final int priority)
-	{ 
-		errOut(Thread.currentThread().getName(),message,priority); 
+	{
+		errOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the warning channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1108,10 +1108,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void warnOut(final String message, final int priority)
-	{ 
-		warnOut(Thread.currentThread().getName(),message,priority); 
+	{
+		warnOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the help channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1119,11 +1119,11 @@ public class Log extends java.util.logging.Logger
 	* @param message the base message to send to the log
 	* @param priority the priority level to give to this message
 	*/
-	public static final void helpOut(final String message, final int priority) 
-	{ 
-		helpOut(Thread.currentThread().getName(),message,priority); 
+	public static final void helpOut(final String message, final int priority)
+	{
+		helpOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the killlog channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1131,11 +1131,11 @@ public class Log extends java.util.logging.Logger
 	* @param message the base message to send to the log
 	* @param priority the priority level to give to this message
 	*/
-	public static final void killsOut(final String message, final int priority) 
-	{ 
-		killsOut(Thread.currentThread().getName(),message,priority); 
+	public static final void killsOut(final String message, final int priority)
+	{
+		killsOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the combatlog channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1143,11 +1143,11 @@ public class Log extends java.util.logging.Logger
 	* @param message the base message to send to the log
 	* @param priority the priority level to give to this message
 	*/
-	public static final void combatOut(final String message, final int priority) 
-	{ 
-		combatOut(Thread.currentThread().getName(),message,priority); 
+	public static final void combatOut(final String message, final int priority)
+	{
+		combatOut(Thread.currentThread().getName(),message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the info channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1156,10 +1156,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void infoOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.info,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the info channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1168,10 +1168,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void sysOut(final String module, final String message, final int priority)
-	{ 
+	{
 		infoOut(module,message);
 	}
-	
+
 	/**
 	* Sends the given message to the error channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1180,10 +1180,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void errOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.error,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the warning channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1192,10 +1192,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void warnOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.warning,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the debug channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1204,10 +1204,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void debugOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.debug,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the help channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1216,10 +1216,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void helpOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.help,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the killlog channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1228,10 +1228,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void killsOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.kills,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the combatlog channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1240,10 +1240,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void combatOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.combat,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given message to the access channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1252,10 +1252,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void accessOut(final String module, final String message, final int priority)
-	{ 
+	{
 		l().standardOut(Type.access,module,message,priority);
 	}
-	
+
 	/**
 	* Sends the given exception to the debug channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1264,10 +1264,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void debugOut(final String module, final int priority, final Exception e)
-	{ 
+	{
 		l().shortExOut(Type.debug,module,priority,e);
 	}
-	
+
 	/**
 	* Sends the given exception to the error channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1276,10 +1276,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void errOut(final String module, final int priority, final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,module,priority,e);
 	}
-	
+
 	/**
 	* Sends the given exception to the warning channel log, if appropriate to do so,
 	* whether its to System.out, a file, both, or neither.
@@ -1288,10 +1288,10 @@ public class Log extends java.util.logging.Logger
 	* @param priority the priority level to give to this message
 	*/
 	public static final void warnOut(final String module, final int priority, final Throwable e)
-	{ 
+	{
 		l().standardExOut(Type.error,module,priority,e);
 	}
-	
+
 	/**
 	 * Sends the given line to the info channel, if appropriate to do so,
 	 * whether its to System.out, a file, both, or neither.
@@ -1365,7 +1365,7 @@ public class Log extends java.util.logging.Logger
 			}
 		}
 	}
-	
+
 	/**
 	* Handles raw info logging entries.  Sends them to System.out,
 	* the log file, or nowhere.
@@ -1456,169 +1456,169 @@ public class Log extends java.util.logging.Logger
 	 * Returns whether error channel writer is allocated for current thread.
 	 * @return whether error channel writer is allocated for current thread.
 	 */
-	public static final boolean errorChannelOn() 
-	{ 
+	public static final boolean errorChannelOn()
+	{
 		return l().isWriterOn(Type.error);
 	}
-	
+
 	/**
 	 * Returns whether help channel writer is allocated for current thread.
 	 * @return whether help channel writer is allocated for current thread.
 	 */
-	public static final boolean helpChannelOn() 
-	{ 
+	public static final boolean helpChannelOn()
+	{
 		return l().isWriterOn(Type.help);
 	}
-	
+
 	/**
 	 * Returns whether debug channel writer is allocated for current thread.
 	 * @return whether debug channel writer is allocated for current thread.
 	 */
-	public static final boolean debugChannelOn() 
-	{ 
+	public static final boolean debugChannelOn()
+	{
 		return l().isWriterOn(Type.debug);
 	}
-	
+
 	/**
 	 * Returns whether info channel writer is allocated for current thread.
 	 * @return whether info channel writer is allocated for current thread.
 	 */
-	public static final boolean infoChannelOn() 
-	{ 
+	public static final boolean infoChannelOn()
+	{
 		return l().isWriterOn(Type.info);
 	}
-	
+
 	/**
 	 * Returns whether warning channel writer is allocated for current thread.
 	 * @return whether warning channel writer is allocated for current thread.
 	 */
-	public static final boolean warnChannelOn() 
-	{ 
+	public static final boolean warnChannelOn()
+	{
 		return l().isWriterOn(Type.warning);
 	}
-	
+
 	/**
 	 * Returns whether kill-log channel writer is allocated for current thread.
 	 * @return whether kill-log channel writer is allocated for current thread.
 	 */
-	public static final boolean killsChannelOn() 
-	{ 
+	public static final boolean killsChannelOn()
+	{
 		return l().isWriterOn(Type.kills);
 	}
-	
+
 	/**
 	 * Returns whether combat-log channel writer is allocated for current thread.
 	 * @return whether combat-log channel writer is allocated for current thread.
 	 */
-	public static final boolean combatChannelOn() 
-	{ 
+	public static final boolean combatChannelOn()
+	{
 		return l().isWriterOn(Type.combat);
 	}
-	
+
 	/**
 	 * Returns whether access-log channel writer is allocated for current thread.
 	 * @return whether access-log channel writer is allocated for current thread.
 	 */
-	public static final boolean accessChannelOn() 
-	{ 
+	public static final boolean accessChannelOn()
+	{
 		return l().isWriterOn(Type.access);
 	}
-	
+
 	/**
 	 * Returns whether error channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether error channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean errorChannelAt(int priority) 
-	{ 
-		final Log l=l(); 
+	public static final boolean errorChannelAt(final int priority)
+	{
+		final Log l=l();
 		return l.getWriter(Type.error,l.getConfig(Type.error),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether help channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether help channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean helpChannelAt(int priority) 
-	{ 
-		final Log l=l(); 
+	public static final boolean helpChannelAt(final int priority)
+	{
+		final Log l=l();
 		return l.getWriter(Type.help,l.getConfig(Type.help),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether debug channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether debug channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean debugChannelAt(int priority) 
-	{ 
-		final Log l=l(); 
+	public static final boolean debugChannelAt(final int priority)
+	{
+		final Log l=l();
 		return l.getWriter(Type.debug,l.getConfig(Type.debug),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether info channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether info channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean infoChannelAt(int priority) 
+	public static final boolean infoChannelAt(final int priority)
 	{
 		final Log l=l();
 		return l.getWriter(Type.info,l.getConfig(Type.info),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether warning channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether warning channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean warnChannelAt(int priority) 
-	{ 
-		final Log l=l(); 
+	public static final boolean warnChannelAt(final int priority)
+	{
+		final Log l=l();
 		return l.getWriter(Type.warning,l.getConfig(Type.warning),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether kill-log channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether kill-log channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean killsChannelAt(int priority) 
+	public static final boolean killsChannelAt(final int priority)
 	{
-		final Log l=l(); 
+		final Log l=l();
 		return l.getWriter(Type.kills,l.getConfig(Type.kills),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether combat-log channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether combat-log channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean combatChannelAt(int priority) 
+	public static final boolean combatChannelAt(final int priority)
 	{
 		final Log l=l();
 		return l.getWriter(Type.combat,l.getConfig(Type.combat),priority)!=null;
 	}
-	
-	
+
+
 	/**
 	 * Returns whether access-log channel writer is allocated for current thread for given priority.
 	 * @param priority priority level to check for writer at
 	 * @return whether access-log channel writer is allocated for current thread for given priority.
 	 */
-	public static final boolean accessChannelAt(int priority) 
+	public static final boolean accessChannelAt(final int priority)
 	{
 		final Log l=l();
 		return l.getWriter(Type.access,l.getConfig(Type.access),priority)!=null;
 	}
-	
+
 	/** totally optional, this is the list of maskable error message types.  Useful for internet apps */
 	private final static String[] maskErrMsgs={
 		"broken pipe",
@@ -1639,33 +1639,33 @@ public class Log extends java.util.logging.Logger
 	 * @param os the objects
 	 * @return the string
 	 */
-	private String toStringList(Object[] os)
+	private String toStringList(final Object[] os)
 	{
 		if(os==null)
 			return "";
 		if(os.length==0)
 			return "";
-		
+
 		final StringBuilder str=new StringBuilder((os[0]==null)?"null":os[0].toString());
 		for(int i=1;i<os.length;i++)
 			str.append(",").append(os[i]==null?"null":os[i].toString());
 		return str.toString();
 	}
-	
+
 	/**
 	 * Returns either the part of the given string after a final '.', or the current thread name
 	 * if no . available.
 	 * @param sourceClass the string to look for a . in
 	 * @return the module name
 	 */
-	private String toModuleName(String sourceClass)
+	private String toModuleName(final String sourceClass)
 	{
 		if((sourceClass!=null)&&(sourceClass.length()>0)&&(sourceClass.indexOf('.')>=0))
 			return sourceClass.substring(sourceClass.lastIndexOf('.')+1);
 		else
 			return Thread.currentThread().getName();
 	}
-	
+
 	/**
 	 * Given the log level from the java Log interface, return
 	 * the local cmlog type.
@@ -1686,8 +1686,8 @@ public class Log extends java.util.logging.Logger
 				return Type.error;
 		}
 	}
-	
-	@Override public synchronized void addHandler(Handler handler){}
+
+	@Override public synchronized void addHandler(final Handler handler){}
 	//Log a CONFIG message.
 	@Override
 	public void	config(final String msg)
@@ -1696,67 +1696,67 @@ public class Log extends java.util.logging.Logger
 	}
 	//Log a method entry.
 	@Override
-	public void	entering(final String sourceClass, final String sourceMethod) 
+	public void	entering(final String sourceClass, final String sourceMethod)
 	{
 		l().standardOut(Type.debug, toModuleName(sourceClass), sourceMethod, Integer.MIN_VALUE);
 	}
 	//Log a method entry, with one parameter.
 	@Override
-	public void	entering(final String sourceClass, final String sourceMethod, final Object param1) 
+	public void	entering(final String sourceClass, final String sourceMethod, final Object param1)
 	{
 		l().standardOut(Type.debug, toModuleName(sourceClass), sourceMethod+": "+param1, Integer.MIN_VALUE);
 	}
 	//Log a method entry, with an array of parameters.
 	@Override
-	public void	entering(final String sourceClass, final String sourceMethod, final Object[] params) 
+	public void	entering(final String sourceClass, final String sourceMethod, final Object[] params)
 	{
 		l().standardOut(Type.debug, toModuleName(sourceClass), sourceMethod+": "+toStringList(params), Integer.MIN_VALUE);
 	}
 	//Log a method return.
 	@Override
-	public void	exiting(final String sourceClass, final String sourceMethod) 
+	public void	exiting(final String sourceClass, final String sourceMethod)
 	{
 		l().standardOut(Type.debug, toModuleName(sourceClass), sourceMethod, Integer.MIN_VALUE);
 	}
 	//Log a method return, with result object.
 	@Override
-	public void	exiting(final String sourceClass, final String sourceMethod, final Object result) 
+	public void	exiting(final String sourceClass, final String sourceMethod, final Object result)
 	{
 		l().standardOut(Type.debug, toModuleName(sourceClass), sourceMethod+": "+result, Integer.MIN_VALUE);
 	}
 	//Log a FINE message.
 	@Override
-	public void	fine(final String msg) 
+	public void	fine(final String msg)
 	{
 		l().standardOut(Type.access, Thread.currentThread().getName(), msg, Integer.MIN_VALUE);
 	}
 	//Log a FINER message.
 	@Override
-	public void	finer(final String msg) 
+	public void	finer(final String msg)
 	{
 		l().standardOut(Type.debug, Thread.currentThread().getName(), msg, Integer.MIN_VALUE);
 	}
 	//Log a FINEST message.
 	@Override
-	public void	finest(final String msg) 
+	public void	finest(final String msg)
 	{
 		l().standardOut(Type.debug, Thread.currentThread().getName(), msg, Integer.MIN_VALUE);
 	}
 	//Get the current filter for this Logger.
-	@Override 
+	@Override
 	public Filter	getFilter()
-	{ 
+	{
 		return null;
 	}
 	//Get the Handlers associated with this logger.
 	@Override
-	public synchronized Handler[]	getHandlers() 
-	{ 
+	public synchronized Handler[]	getHandlers()
+	{
 		return new Handler[0];
 	}
 	//Get the log Level that has been specified for this Logger.
 	@Override
-	public Level	getLevel() 
+	public Level	getLevel()
 	{
 		final Log log=l();
 		if(log.isWriterOn(Type.access))
@@ -1775,67 +1775,67 @@ public class Log extends java.util.logging.Logger
 	}
 	//Get the name for this logger.
 	@Override
-	public String	getName() 
+	public String	getName()
 	{
 		return logName;
 	}
 	//Return the parent for this Logger.
 	@Override
 	public Logger	getParent()
-	{ 
-		return null; 
+	{
+		return null;
 	}
 	//Retrieve the localization resource bundle for this logger for the current default locale.
 	@Override
-	public ResourceBundle	getResourceBundle() 
-	{ 
-		return null; 
+	public ResourceBundle	getResourceBundle()
+	{
+		return null;
 	}
 	//Retrieve the localization resource bundle name for this logger.
 	@Override
 	public String	getResourceBundleName()
-	{ 
-		return ""; 
+	{
+		return "";
 	}
 	//Discover whether or not this logger is sending its output to its parent logger.
 	@Override
 	public synchronized boolean	getUseParentHandlers()
-	{ 
-		return false; 
+	{
+		return false;
 	}
 	//Log an INFO message.
 	@Override
-	public void	info(final String msg) 
+	public void	info(final String msg)
 	{
 		standardOut(Type.info,Thread.currentThread().getName(),msg,Integer.MIN_VALUE);
 	}
 	//Check if a message of the given level would actually be logged by this logger.
 	@Override
-	public boolean	isLoggable(final Level level) 
+	public boolean	isLoggable(final Level level)
 	{
 		return this.isWriterOn(getTypeFromLevel(level));
 	}
 	//Log a message, with no arguments.
 	@Override
-	public void	log(final Level level, final String msg) 
+	public void	log(final Level level, final String msg)
 	{
 		standardOut(getTypeFromLevel(level),Thread.currentThread().getName(),msg,Integer.MIN_VALUE);
 	}
 	//Log a message, with one object parameter.
 	@Override
-	public void	log(final Level level, final String msg, final Object param1) 
+	public void	log(final Level level, final String msg, final Object param1)
 	{
 		standardOut(getTypeFromLevel(level),Thread.currentThread().getName(),msg+": "+((param1==null)?"null":param1.toString()),Integer.MIN_VALUE);
 	}
 	//Log a message, with an array of object arguments.
 	@Override
-	public void	log(final Level level, final String msg, final Object[] params) 
+	public void	log(final Level level, final String msg, final Object[] params)
 	{
 		standardOut(getTypeFromLevel(level),Thread.currentThread().getName(),msg+": "+(toStringList(params)),Integer.MIN_VALUE);
 	}
 	//Log a message, with associated Throwable information.
 	@Override
-	public void	log(final Level level, final String msg, final Throwable thrown) 
+	public void	log(final Level level, final String msg, final Throwable thrown)
 	{
 		if(thrown==null)
 			log(level,msg);
@@ -1843,31 +1843,31 @@ public class Log extends java.util.logging.Logger
 	}
 	//Log a LogRecord.
 	@Override
-	public void	log(final LogRecord record) 
+	public void	log(final LogRecord record)
 	{
 		log(record.getLevel(), record.getMessage(), record.getThrown());
 	}
 	//Log a message, specifying source class and method, with no arguments.
 	@Override
-	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg) 
+	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg)
 	{
 		standardOut(getTypeFromLevel(level),toModuleName(sourceClass),sourceMethod+": "+msg,Integer.MIN_VALUE);
 	}
 	//Log a message, specifying source class and method, with a single object parameter to the log message.
 	@Override
-	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Object param1) 
+	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Object param1)
 	{
 		standardOut(getTypeFromLevel(level),toModuleName(sourceClass),sourceMethod+": "+msg+": "+((param1==null)?"null":param1.toString()),Integer.MIN_VALUE);
 	}
 	//Log a message, specifying source class and method, with an array of object arguments.
 	@Override
-	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Object[] params) 
+	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Object[] params)
 	{
 		standardOut(getTypeFromLevel(level),toModuleName(sourceClass),sourceMethod+": "+msg+": "+(toStringList(params)),Integer.MIN_VALUE);
 	}
 	//Log a message, specifying source class and method, with associated Throwable information.
 	@Override
-	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Throwable thrown) 
+	public void	logp(final Level level, final String sourceClass, final String sourceMethod, final String msg, final Throwable thrown)
 	{
 		if(thrown==null)
 			log(level,msg);
@@ -1875,68 +1875,68 @@ public class Log extends java.util.logging.Logger
 	}
 	//Log a message, specifying source class, method, and resource bundle name with no arguments.
 	@Override
-	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg) 
+	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg)
 	{
 		logp(level,sourceClass,sourceMethod+": "+bundleName, msg);
 	}
 	//Log a message, specifying source class, method, and resource bundle name, with a single object parameter to the log message.
 	@Override
-	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, Object param1) 
+	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, final Object param1)
 	{
 		logp(level,sourceClass,sourceMethod+": "+bundleName, msg, param1);
 	}
 	//Log a message, specifying source class, method, and resource bundle name, with an array of object arguments.
 	@Override
-	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, Object[] params) 
+	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, final Object[] params)
 	{
 		logp(level,sourceClass,sourceMethod+": "+bundleName, msg, params);
 	}
 	//Log a message, specifying source class, method, and resource bundle name, with associated Throwable information.
 	@Override
-	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, final Throwable thrown) 
+	public void	logrb(final Level level, final String sourceClass, final String sourceMethod, final String bundleName, final String msg, final Throwable thrown)
 	{
 		logp(level,sourceClass,sourceMethod+": "+bundleName, msg, thrown);
 	}
 	//Remove a log Handler.
 	@Override
-	public synchronized void	removeHandler(Handler handler)
+	public synchronized void	removeHandler(final Handler handler)
 	{
 	}
 	//Set a filter to control output on this Logger.
 	@Override
-	public void	setFilter(Filter newFilter)
+	public void	setFilter(final Filter newFilter)
 	{
 	}
 	//Set the log level specifying which message levels will be logged by this logger.
 	@Override
-	public void	setLevel(Level newLevel)
+	public void	setLevel(final Level newLevel)
 	{
 	}
 	//Set the parent for this Logger.
 	@Override
-	public void	setParent(Logger parent)
+	public void	setParent(final Logger parent)
 	{
 	}
 	//Specify whether or not this logger should send its output to it's parent Logger.
 	@Override
-	public synchronized void	setUseParentHandlers(boolean useParentHandlers)
+	public synchronized void	setUseParentHandlers(final boolean useParentHandlers)
 	{
-	} 
+	}
 	//Log a SEVERE message.
 	@Override
-	public void	severe(final String msg) 
+	public void	severe(final String msg)
 	{
 		standardOut(Type.error,Thread.currentThread().getName(),msg,Integer.MIN_VALUE);
 	}
 	//Log throwing an exception.
 	@Override
-	public void	throwing(final String sourceClass, final String sourceMethod, final Throwable thrown) 
+	public void	throwing(final String sourceClass, final String sourceMethod, final Throwable thrown)
 	{
 		standardExOut(Type.error, toModuleName(sourceClass), Integer.MIN_VALUE, thrown);
 	}
 	//Log a WARNING message.
 	@Override
-	public void	warning(final String msg) 
+	public void	warning(final String msg)
 	{
 		standardOut(Type.warning,Thread.currentThread().getName(),msg,Integer.MIN_VALUE);
 	}

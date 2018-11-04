@@ -57,7 +57,7 @@ public class WebServer extends Thread
 	public static final String	  POMVERSION		= "2.4";
 	public static 		double	  VERSION;
 	static { try { VERSION=Double.parseDouble(POMVERSION); } catch(final Exception e){ VERSION=0.0;} }
-	
+
 	private volatile boolean	  	shutdownRequested	= false;// notice of external shutdown request
 	private volatile String	  		lastErrorMsg		= "";	// spam prevention for error reporting
 	private Selector			  	servSelector 		= null; // server io selector
@@ -69,25 +69,25 @@ public class WebServer extends Thread
 	private final LinkedList<HTTPIOHandler>  		handlers;	// list of connected channels.. managed by timeoutthread
 	private final Map<ServerSocketChannel, Boolean>	servChannels; // map of socket channels to an SSL boolean
 	private final LinkedList<Runnable>				registerOps;
-	
-	public WebServer(String serverName, CWConfig config)
+
+	public WebServer(final String serverName, final CWConfig config)
 	{
 		super("cweb-"+serverName);
 		this.config=config;
 		this.serverName=serverName;
-		
+
 		// setup the thread pool
 		handlers = new LinkedList<HTTPIOHandler>();
 		executor = new CWThreadExecutor(serverName,
 										config,
-										config.getCoreThreadPoolSize(), config.getMaxThreadPoolSize(), config.getMaxThreadIdleMs(), 
+										config.getCoreThreadPoolSize(), config.getMaxThreadPoolSize(), config.getMaxThreadIdleMs(),
 										TimeUnit.MILLISECONDS, config.getMaxThreadTimeoutSecs(), config.getMaxThreadQueueSize());
 
 		servChannels = new HashMap<ServerSocketChannel, Boolean>();
 		registerOps = new LinkedList<Runnable>();
-		
+
 		setDaemon(true);
-		
+
 		// if we are going to be listening on ssl, generate a global ssl context to use
 		if((config.getHttpsListenPorts()==null)
 		||(config.getHttpsListenPorts().length==0))
@@ -104,7 +104,7 @@ public class WebServer extends Thread
 	{
 		return Double.toString(VERSION);
 	}
-	
+
 	/**
 	 * Return list of threads that have timed out according to server settings.
 	 * @return a collection of runnables
@@ -124,7 +124,7 @@ public class WebServer extends Thread
 	 * @param listenPort the port to listen on
 	 * @throws IOException
 	 */
-	private void openChannel(int listenPort, Boolean isSSL) throws IOException
+	private void openChannel(final int listenPort, final Boolean isSSL) throws IOException
 	{
 		final ServerSocketChannel servChan = ServerSocketChannel.open();
 		final ServerSocket serverSocket = servChan.socket();
@@ -134,7 +134,7 @@ public class WebServer extends Thread
 		servChannels.put(servChan, isSSL);
 		config.getLogger().info("Started "+(isSSL.booleanValue()?"ssl ":"http ")+serverName+" on port "+listenPort);
 	}
-	
+
 	/**
 	 * Open the main web server listening sockets and
 	 * register a selector for accepting connections.
@@ -145,7 +145,7 @@ public class WebServer extends Thread
 		servSelector = Selector.open();
 		boolean portOpen=false;
 		IOException lastException=null;
-		
+
 		for(final int listenPort : config.getHttpListenPorts())
 		{
 			try
@@ -203,7 +203,7 @@ public class WebServer extends Thread
 							timeOutStrayHandlers();
 							config.getSessions().cleanUpSessions();
 						}
-						catch(Exception e)
+						catch(final Exception e)
 						{
 							if(!lastErrorMsg.equals(e.toString()) && (e.toString()!=null))
 							{
@@ -224,9 +224,9 @@ public class WebServer extends Thread
 		};
 		timeoutThread.start();
 	}
-	
+
 	/**
-	 * Handles a particular channel event from its given selectionkey. 
+	 * Handles a particular channel event from its given selectionkey.
 	 * So far, only accepted connections and readable keys are managed here.
 	 * @param key the channel event key
 	 * @throws IOException
@@ -237,7 +237,7 @@ public class WebServer extends Thread
 		{
 			final ServerSocketChannel server = (ServerSocketChannel) key.channel();
 			final SocketChannel channel = server.accept();
-			if (channel != null) 
+			if (channel != null)
 			{
 				HTTPIOHandler handler;
 				if(servChannels.get(server).booleanValue())
@@ -253,7 +253,7 @@ public class WebServer extends Thread
 			}
 		}
 		if(key.isReadable() // bytes were received on one of the channel .. so read!
-		|| (((key.interestOps() & SelectionKey.OP_WRITE)==SelectionKey.OP_WRITE) && key.isWritable())) 
+		|| (((key.interestOps() & SelectionKey.OP_WRITE)==SelectionKey.OP_WRITE) && key.isWritable()))
 		{
 			final HTTPIOHandler handler = (HTTPIOHandler)key.attachment();
 			//config.getLogger().finer("Read/Write: "+handler.getName());
@@ -268,7 +268,7 @@ public class WebServer extends Thread
 							key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
 							executor.execute(handler);
 						}
-						catch(CancelledKeyException x)
+						catch(final CancelledKeyException x)
 						{
 							synchronized(handlers) // synched because you can't iterate and modify, and because its a linkedlist
 							{
@@ -286,7 +286,7 @@ public class WebServer extends Thread
 					}
 				}
 			}
-			catch(Exception e)
+			catch(final Exception e)
 			{
 				config.getLogger().log(Level.SEVERE, e.getMessage(), e);
 			}
@@ -298,7 +298,7 @@ public class WebServer extends Thread
 			config.getLogger().finer("Rejected handler key for "+handler.getName());
 		}
 	}
-	
+
 	/**
 	 * Scan the list of active channel connections for any that are timed out,
 	 * or otherwise need to be removed from this list.  If found, do so, and
@@ -318,7 +318,7 @@ public class WebServer extends Thread
 			{
 				i=handlers.iterator();
 			}
-			catch(java.lang.IndexOutOfBoundsException x)
+			catch(final java.lang.IndexOutOfBoundsException x)
 			{
 				handlers.clear();
 				throw x;
@@ -338,13 +338,13 @@ public class WebServer extends Thread
 						i.remove();
 					}
 				}
-				catch(NullPointerException e)
+				catch(final NullPointerException e)
 				{
 					try
 					{
 						i.remove();
 					}
-					catch(Exception xe){ }
+					catch(final Exception xe){ }
 				}
 			}
 		}
@@ -390,13 +390,13 @@ public class WebServer extends Thread
 						registerOp.run();
 					}
 				}
-				if (n == 0) 
+				if (n == 0)
 				{
 					continue;
 				}
 
 				final Iterator<SelectionKey> it = servSelector.selectedKeys().iterator();
-				while (it.hasNext()) 
+				while (it.hasNext())
 				{
 					final SelectionKey key = it.next();
 					try
@@ -433,7 +433,7 @@ public class WebServer extends Thread
 	 */
 	public void close()
 	{
-		
+
 		shutdownRequested=true;
 		executor.shutdown();
 		try
@@ -474,7 +474,7 @@ public class WebServer extends Thread
 			handlers.clear();
 		}
 	}
-	
+
 	/**
 	 * Enqueue a new socket channel to be registered for read notifications.
 	 * Does not do the action at once, but will, soon.
@@ -510,7 +510,7 @@ public class WebServer extends Thread
 		}
 	}
 
-	
+
 	/**
 	 * Enqueue a new socket channel to be registered for read notifications.
 	 * Does not do the action at once, but will, soon.
@@ -546,7 +546,7 @@ public class WebServer extends Thread
 	{
 		return config;
 	}
-	
+
 	/**
 	 * Create, Initialize, load, and create a web server configuration based around the given
 	 * ini filename and the given java logger.
@@ -554,13 +554,13 @@ public class WebServer extends Thread
 	 * @param iniInputStream the ini data to load further settings from
 	 * @return a populated configuration object to create a server from
 	 */
-	public static CWConfig createConfig(java.util.logging.Logger log, InputStream iniInputStream) throws IOException
+	public static CWConfig createConfig(final java.util.logging.Logger log, final InputStream iniInputStream) throws IOException
 	{
 		final CWConfig config=new CWConfig();
 		return initConfig(config,log,iniInputStream);
 	}
-	
-	
+
+
 	/**
 	 * Initialize, load, and create a web server configuration based around the given
 	 * ini filename and the given java logger.
@@ -568,14 +568,14 @@ public class WebServer extends Thread
 	 * @param iniInputStream the ini data to load further settings from
 	 * @return a populated configuration object to create a server from
 	 */
-	public static CWConfig initConfig(final CWConfig config, java.util.logging.Logger log, InputStream iniInputStream) throws IOException
+	public static CWConfig initConfig(final CWConfig config, final java.util.logging.Logger log, final InputStream iniInputStream) throws IOException
 	{
 		config.setLogger(log);
 		final Properties props=new Properties();
 		props.load(iniInputStream);
-		
+
 		config.load(props);
-		
+
 		final ServletManager servletsManager = new ServletManager(config);
 		final SessionManager sessionsManager = new SessionManager(config);
 		final FileCache fileCacheManager = new FileCache(config,config.getFileManager());
@@ -586,23 +586,23 @@ public class WebServer extends Thread
 		config.setFileCache(fileCacheManager);
 		config.setConverters(mimeConverterManager);
 		config.setFileGetter(fileGetter);
-		
+
 		HTTPHeader.Common.setKeepAliveHeader(HTTPHeader.Common.KEEP_ALIVE.makeLine(
-											 String.format(HTTPHeader.Common.KEEP_ALIVE_FMT, 
+											 String.format(HTTPHeader.Common.KEEP_ALIVE_FMT,
 											 Integer.valueOf((int)(config.getRequestMaxIdleMs()/1000)),
 											 Integer.valueOf(config.getRequestMaxPerConn()))));
 		return config;
 	}
-	
+
 	/**
 	 * Good olde main.  It does nothing but initialize logging, spawn a new web server
 	 * and then join its thread until it is gone.  I suppose I could just create the
 	 * web server and call run() on it, but somehow this feels better.
 	 * @param args As no external configuration is permitted, no args are accepted
 	 */
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
-		
+
 		Log.instance().configureLogFile("web", 2);
 		String debug="OFF";
 		String iniFilename="coffeeweb.ini";
@@ -611,7 +611,7 @@ public class WebServer extends Thread
 			if(arg.startsWith("BOOT="))
 				iniFilename=arg.substring(5);
 		}
-		
+
 		CWConfig config;
 		try
 		{
@@ -623,9 +623,9 @@ public class WebServer extends Thread
 			System.exit(-1);
 			return; // an unhit operation, but my ide is argueing with me over it.
 		}
-		
+
 		debug=config.getDebugFlag();
-		
+
 		for(final String arg : args)
 		{
 			if(arg.equalsIgnoreCase("DEBUG"))
@@ -640,7 +640,7 @@ public class WebServer extends Thread
 		Log.instance().configureLog(Log.Type.debug, debug);
 		Log.instance().configureLog(Log.Type.access, config.getAccessLogFlag());
 		config.getLogger().info("Starting "+NAME+" "+VERSION);
-		
+
 		final WebServer server = new WebServer("server", config);
 		config.setCoffeeWebServer(server);
 		final Thread t = new CWThread(config, server, NAME);
