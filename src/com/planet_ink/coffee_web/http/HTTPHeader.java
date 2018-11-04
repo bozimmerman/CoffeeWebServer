@@ -224,10 +224,14 @@ public interface HTTPHeader
 			{
 				return Common.valueOf(str.toUpperCase().replace('-','_'));
 			}
-			catch(final Exception e) { }
+			catch (final Exception e)
+			{
+			}
 			for(final HTTPHeader head : Common.values())
+			{
 				if(head.lowerCaseName().equalsIgnoreCase(str))
 					return head;
+			}
 			return null;
 		}
 

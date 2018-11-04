@@ -81,7 +81,8 @@ public class CWHTMLConverter implements HTTPOutputConverter
 		final File[] files = (pageFile.isDirectory() ? pageFile.listFiles() : null);
 		if((files != null) && (files.length>0))
 		{
-			Arrays.sort(files,new Comparator<File>(){
+			Arrays.sort(files,new Comparator<File>()
+			{
 				@Override
 				public int compare(final File arg0, final File arg1)
 				{
@@ -190,7 +191,9 @@ public class CWHTMLConverter implements HTTPOutputConverter
 						else
 							out.write(("@"+macro.toString()+"@").getBytes());
 					}
-					catch(final Exception e){}
+					catch (final Exception e)
+					{
+					}
 					state=-1;
 					macro.setLength(0);
 				}

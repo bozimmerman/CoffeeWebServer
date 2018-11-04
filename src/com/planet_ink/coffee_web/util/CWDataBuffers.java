@@ -161,7 +161,13 @@ public class CWDataBuffers implements DataBuffers
 			}
 			if(p.startPos!=null)
 			{
-				try { r.seek(p.startPos.longValue()); } catch(final Exception e){}
+				try
+				{
+					r.seek(p.startPos.longValue());
+				}
+				catch (final Exception e)
+				{
+				}
 				p.startPos=null;
 			}
 			if(buffer==null)
@@ -201,15 +207,36 @@ public class CWDataBuffers implements DataBuffers
 		}
 	}
 
-	@Override public boolean hasNext() { return tryNext()!=null;}
+	@Override
+	public boolean hasNext()
+	{
+		return tryNext() != null;
+	}
 
-	@Override public ByteBuffer next() { return tryNext(); }
+	@Override
+	public ByteBuffer next()
+	{
+		return tryNext();
+	}
 
-	@Override public void remove() { throw new java.lang.NoSuchMethodError(); }
+	@Override
+	public void remove()
+	{
+		throw new java.lang.NoSuchMethodError();
+	}
 
-	private final void created() { }
-	private final void accessed() { }
-	private final void finalized() { }
+	private final void created()
+	{
+	}
+
+	private final void accessed()
+	{
+	}
+
+	private final void finalized()
+	{
+	}
+
 	public void finalize() throws Throwable
 	{
 		if(list.size()>0)
@@ -225,10 +252,28 @@ public class CWDataBuffers implements DataBuffers
 	public void close()
 	{
 		for(final Closeable o : closers)
-			try{ o.close(); } catch(final Exception e){}
+		{
+			try
+			{
+				o.close();
+			}
+			catch (final Exception e)
+			{
+			}
+		}
 		for(final Object o : list)
+		{
 			if(o instanceof Closeable)
-				try{ ((Closeable)o).close(); } catch(final Exception e){}
+			{
+				try
+				{
+					((Closeable) o).close();
+				}
+				catch (final Exception e)
+				{
+				}
+			}
+		}
 		list.clear();
 		length=0;
 	}
@@ -259,7 +304,9 @@ public class CWDataBuffers implements DataBuffers
 			if((lastModifiedTime != this.lastModifiedTime) && (lastModifiedTime > 0))
 				this.lastModifiedTime=lastModifiedTime;
 		}
-		catch(final IOException e){ }
+		catch (final IOException e)
+		{
+		}
 	}
 	@Override
 	public void insertTop(final RandomAccessFile file, final long lastModifiedTime, final boolean isChunkable)
@@ -271,7 +318,9 @@ public class CWDataBuffers implements DataBuffers
 			if((lastModifiedTime != this.lastModifiedTime) && (lastModifiedTime > 0))
 				this.lastModifiedTime=lastModifiedTime;
 		}
-		catch(final IOException e){ }
+		catch (final IOException e)
+		{
+		}
 	}
 
 	@Override
@@ -321,7 +370,7 @@ public class CWDataBuffers implements DataBuffers
 	@Override
 	public ByteBuffer flushToBuffer()
 	{
-		if((list.size()==1)&&(list.getFirst().data instanceof ByteBuffer))
+  		if((list.size()==1)&&(list.getFirst().data instanceof ByteBuffer))
 		{
 			final ByteBuffer b=(ByteBuffer)list.getFirst().data;
 			close();
@@ -341,7 +390,11 @@ public class CWDataBuffers implements DataBuffers
 		return ByteBuffer.wrap(bout.toByteArray());
 	}
 
-	@Override public long getLength(){ return length; }
+	@Override
+	public long getLength()
+	{
+		return length;
+	}
 
 	@Override
 	public Date getLastModified()
@@ -403,8 +456,18 @@ public class CWDataBuffers implements DataBuffers
 			}
 		}
 		for(final FileEntry p : list)
+		{
 			if((p.data instanceof Closeable) && (!usedObjs.contains(p.data)))
-				try{ ((Closeable)p.data).close(); } catch(final IOException e){}
+			{
+				try
+				{
+					((Closeable) p.data).close();
+				}
+				catch (final IOException e)
+				{
+				}
+			}
+		}
 		this.length=newLen;
 		list=ranged;
 	}

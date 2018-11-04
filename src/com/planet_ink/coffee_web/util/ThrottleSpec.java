@@ -63,7 +63,9 @@ public class ThrottleSpec
 				final long remainingTime = (rollingBucket.getFirst().first.longValue() - System.currentTimeMillis());
 				Thread.sleep( remainingTime < 2 ? 1 : remainingTime );
 			}
-			catch(final Exception e){ }
+			catch (final Exception e)
+			{
+			}
 			return request(bytesRequested);
 		}
 		return 1;

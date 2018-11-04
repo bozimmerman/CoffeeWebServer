@@ -241,7 +241,17 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		str.append(HTTPIOHandler.SERVER_HEADER);
 		str.append(HTTPIOHandler.CONN_HEADER);
 		str.append(HTTPHeader.Common.getKeepAliveHeader());
-		str.append(HTTPHeader.Common.DATE.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
+		try
+		{
+			// java 1.8 has some sort of bug in BaseCalendar that strips this harmless code sometimes.
+			final Date now = new Date(System.currentTimeMillis());
+			final String formattedDate = HTTPIOHandler.DATE_FORMAT.format(now);
+			str.append(HTTPHeader.Common.DATE.makeLine(formattedDate));
+		}
+		catch(final java.lang.ArrayIndexOutOfBoundsException e)
+		{
+			// just eat it.
+		}
 		str.append(HTTPIOHandler.RANGE_HEADER);
 		str.append(EOLN);
 		return ByteBuffer.wrap(str.toString().getBytes());
@@ -482,9 +492,15 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				if(sinceDate >= lastModDate)
 					throw HTTPException.standardException(HTTPStatus.S304_NOT_MODIFIED);
 			}
-			catch(final ParseException e) { }
-			catch(final NumberFormatException e) { }
-			catch(final ArrayIndexOutOfBoundsException e) { }
+			catch (final ParseException e)
+			{
+			}
+			catch (final NumberFormatException e)
+			{
+			}
+			catch (final ArrayIndexOutOfBoundsException e)
+			{
+			}
 		}
 	}
 
@@ -604,11 +620,14 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				buffers=config.getFileCache().getFileData(pageFile, null);
 				//checkIfModifiedSince(request,buffers); this is RETARDED!!!
 				HTTPOutputConverter converter;
-				try {
+				try
+				{
 					converter = converterClass.newInstance();
 					return new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), System.currentTimeMillis(), true);
 				}
-				catch (final Exception e) { }
+				catch (final Exception e)
+				{
+				}
 				return buffers;
 			}
 			else

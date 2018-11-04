@@ -1073,7 +1073,10 @@ public class CWConfig implements Cloneable
 				{
 					defaultPorts[numPorts]=Integer.parseInt(element.trim());
 					numPorts++;
-				}catch(final Exception e) {}
+				}
+				catch (final Exception e)
+				{
+				}
 			defaultPorts=Arrays.copyOf(defaultPorts, numPorts);
 		}
 		return defaultPorts;
