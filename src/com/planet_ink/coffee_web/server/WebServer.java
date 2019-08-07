@@ -625,13 +625,12 @@ public class WebServer extends Thread
 	 */
 	public static void main(final String[] args)
 	{
-
 		Log.instance().configureLogFile("web", 2);
 		String debug="OFF";
 		String iniFilename="coffeeweb.ini";
 		for(final String arg : args)
 		{
-			if(arg.startsWith("BOOT="))
+			if(arg.toUpperCase().startsWith("BOOT="))
 				iniFilename=arg.substring(5);
 		}
 
@@ -642,7 +641,8 @@ public class WebServer extends Thread
 		}
 		catch (final Exception e)
 		{
-			e.printStackTrace();
+			e.printStackTrace(System.out);
+			e.printStackTrace(System.err);
 			System.exit(-1);
 			return; // an unhit operation, but my ide is argueing with me over it.
 		}
