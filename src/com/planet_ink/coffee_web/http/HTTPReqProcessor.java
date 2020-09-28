@@ -235,7 +235,17 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				str.append(HTTPHeader.Common.CONTENT_LENGTH.makeLine(0));
 		}
 		if(response != null)
-			str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
+		{
+			try
+			{
+				str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
+			}
+			catch(final ArrayIndexOutOfBoundsException ae)
+			{
+				//just eat it .. but .. log it
+				config.getLogger().severe("Last Modified date of "+response.getLastModified().getTime()+" caused an arrayindex in HTTPReqProcessor #1.");
+			}
+		}
 		if(config.isDebugging())
 			config.getLogger().finer("Response: "+str.toString().replace('\r', ' ').replace('\n', ' '));
 		str.append(HTTPIOHandler.SERVER_HEADER);
@@ -251,6 +261,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		catch(final java.lang.ArrayIndexOutOfBoundsException e)
 		{
 			// just eat it.
+			config.getLogger().severe("Last Modified date of "+response.getLastModified().getTime()+" caused an arrayindex in HTTPReqProcessor #2.");
 		}
 		str.append(HTTPIOHandler.RANGE_HEADER);
 		str.append(EOLN);

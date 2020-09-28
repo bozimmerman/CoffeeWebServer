@@ -400,7 +400,7 @@ public class CWDataBuffers implements DataBuffers
 	public Date getLastModified()
 	{
 		if(this.lastModifiedTime==0)
-			return new Date();
+			return new Date(System.currentTimeMillis());
 		return new Date(this.lastModifiedTime);
 	}
 
