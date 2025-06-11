@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.planet_ink.coffee_web.interfaces.DataBuffers;
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
 public class CWDataBuffers implements DataBuffers
 {
 	private static final byte[] EOLNBYTES = "\r\n".getBytes();
@@ -237,13 +236,14 @@ public class CWDataBuffers implements DataBuffers
 	{
 	}
 
+	@Override
 	public void finalize() throws Throwable
 	{
 		if(list.size()>0)
 		{
 			finalized();
 			close();
-			System.err.println("DataBuffer Not Closed!");
+			System.err.println("DataBuffer Not Closed ("+length+")!");
 		}
 		super.finalize();
 	}
@@ -400,7 +400,7 @@ public class CWDataBuffers implements DataBuffers
 	public Date getLastModified()
 	{
 		if(this.lastModifiedTime==0)
-			return new Date(System.currentTimeMillis());
+			return new Date();
 		return new Date(this.lastModifiedTime);
 	}
 

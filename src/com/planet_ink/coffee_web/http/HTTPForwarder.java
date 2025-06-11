@@ -14,7 +14,7 @@ import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,6 +73,18 @@ public class HTTPForwarder implements HTTPIOHandler, Runnable
 	public String getName()
 	{
 		return name;
+	}
+
+	/**
+	 * Notifies the I/O handler that it has data to process from its internal
+	 * read buffers, which it will be allowed to process in the future.
+	 * @return true if the scheduling was successful
+	 */
+	@Override
+	public boolean scheduleReading()
+	{
+		this.idleTime = 0;
+		return true;
 	}
 
 	@Override

@@ -7,9 +7,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.planet_ink.coffee_web.http.HTTPException;
-import com.planet_ink.coffee_web.http.HTTPStatus;
-import com.planet_ink.coffee_web.http.MIMEType;
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
@@ -18,7 +15,7 @@ import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.CWThread;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

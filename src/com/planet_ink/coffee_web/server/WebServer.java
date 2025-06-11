@@ -27,7 +27,7 @@ import com.planet_ink.coffee_web.util.CWThreadExecutor;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -268,6 +268,7 @@ public class WebServer extends Thread
 		|| (((key.interestOps() & SelectionKey.OP_WRITE)==SelectionKey.OP_WRITE) && key.isWritable()))
 		{
 			final HTTPIOHandler handler = (HTTPIOHandler)key.attachment();
+			handler.scheduleReading(); // dont idle out in the midding of processing, omg!
 			//config.getLogger().finer("Read/Write: "+handler.getName());
 			try
 			{
@@ -330,7 +331,7 @@ public class WebServer extends Thread
 			{
 				i=handlers.iterator();
 			}
-			catch(final java.lang.IndexOutOfBoundsException x)
+			catch(final IndexOutOfBoundsException x)
 			{
 				handlers.clear();
 				throw x;
@@ -437,7 +438,7 @@ public class WebServer extends Thread
 			}
 		}
 		close();
-		config.getLogger().info("Shutdown complete");
+		config.getLogger().info(serverName+" shutdown complete");
 	}
 
 	/**
@@ -625,6 +626,7 @@ public class WebServer extends Thread
 	 */
 	public static void main(final String[] args)
 	{
+
 		Log.instance().configureLogFile("web", 2);
 		String debug="OFF";
 		String iniFilename="coffeeweb.ini";

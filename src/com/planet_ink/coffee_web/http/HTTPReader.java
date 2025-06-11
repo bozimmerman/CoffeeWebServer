@@ -30,7 +30,7 @@ import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_common.logging.Log.Type;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -216,6 +216,18 @@ public class HTTPReader implements HTTPIOHandler, ProtocolHandler, Runnable
 		return isRunning.get() && ((forwarder==null) || forwarder.isRunning());
 	}
 
+	/**
+	 * Notifies the I/O handler that it has data to process from its internal
+	 * read buffers, which it will be allowed to process in the future.
+	 * @return true if the scheduling was successful
+	 */
+	@Override
+	public boolean scheduleReading()
+	{
+		this.idleTime.set(System.currentTimeMillis());
+		return true;
+	}
+
 	@Override
 	public boolean isTimedOut()
 	{
@@ -278,7 +290,6 @@ public class HTTPReader implements HTTPIOHandler, ProtocolHandler, Runnable
 		forwarder=null;
 		try
 		{
-
 			final SocketChannel forwarderChannel = SocketChannel.open(address.getAddress());
 			if (forwarderChannel == null)
 				throw new IOException("Unable to create channel.");
@@ -974,7 +985,10 @@ public class HTTPReader implements HTTPIOHandler, ProtocolHandler, Runnable
 				if(me.getStatus() == HTTPStatus.S101_SWITCHING_PROTOCOLS)
 				{
 					if(me.getNewProtocolHandler() != null)
+					{
 						this.protocolHandler = me.getNewProtocolHandler();
+						protocolHandler.processBuffer(this, currentReq, ByteBuffer.allocate(0)); // initialize the protocol handler
+					}
 				}
 			}
 			finally

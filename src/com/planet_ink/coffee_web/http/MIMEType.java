@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -279,16 +279,19 @@ public interface MIMEType
 			this.parts=type.split("/");
 		}
 
+		@Override
 		public String[] getParts()
 		{
 			return parts;
 		}
 
+		@Override
 		public String getExt()
 		{
 			return ext;
 		}
 
+		@Override
 		public String getType()
 		{
 			return type;

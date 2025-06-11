@@ -1,7 +1,7 @@
 package com.planet_ink.coffee_common.collections;
 
 /*
-Copyright 2012-2018 Bo Zimmerman
+   Copyright 2014-2025 Bo Zimmerman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ public class KeyPairSearchTree<V>
 
 	/**
 	 * Store a new key/value pair
-	 * @param key
-	 * @param value
+	 * @param key the key to add
+	 * @param value the value of the key
 	 */
 	public void addEntry(final String key, final V value)
 	{
@@ -54,7 +54,7 @@ public class KeyPairSearchTree<V>
 	}
 
 	/**
-	 * Retreive teh value for the longest key that
+	 * Retrieve teh value for the longest key that
 	 * the given string starts with
 	 * @param fullStr the string that might start with a key
 	 * @return the value

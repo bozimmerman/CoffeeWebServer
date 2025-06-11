@@ -8,7 +8,7 @@ import com.planet_ink.coffee_web.http.HTTPStatus;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.planet_ink.coffee_web.util.CWConfig;
  */
 public interface HTTPOutputConverter
 {
-
 	/**
 	 * Standard method for converting an intput buffer for writing to
 	 * the client.   The position and limit of the bytebuffer must

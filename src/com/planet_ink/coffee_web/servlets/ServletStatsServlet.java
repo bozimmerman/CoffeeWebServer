@@ -11,7 +11,7 @@ import com.planet_ink.coffee_web.interfaces.SimpleServletResponse;
 import com.planet_ink.coffee_web.util.RequestStats;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.planet_ink.coffee_web.util.RequestStats;
  */
 public class ServletStatsServlet implements SimpleServlet
 {
-
 	private void appendStats(final RequestStats stats, final StringBuilder str)
 	{
 		str.append("Requests total: ").append(stats.getNumberOfRequests()).append("<br>");

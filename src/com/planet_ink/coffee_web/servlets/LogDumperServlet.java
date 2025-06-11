@@ -15,7 +15,7 @@ import com.planet_ink.coffee_web.interfaces.SimpleServletRequest;
 import com.planet_ink.coffee_web.interfaces.SimpleServletResponse;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import com.planet_ink.coffee_web.interfaces.SimpleServletResponse;
  */
 public class LogDumperServlet implements SimpleServlet
 {
-
 	@Override
 	public void doGet(final SimpleServletRequest request, final SimpleServletResponse response)
 	{

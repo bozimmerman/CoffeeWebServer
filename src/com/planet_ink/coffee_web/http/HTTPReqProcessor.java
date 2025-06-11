@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.planet_ink.coffee_web.http.HTTPMethod;
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.FileCacheManager;
 import com.planet_ink.coffee_web.interfaces.FileManager;
@@ -26,9 +25,10 @@ import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.CWConfig;
 import com.planet_ink.coffee_web.util.RequestStats;
 import com.planet_ink.coffee_common.collections.Pair;
+import com.planet_ink.coffee_common.logging.Log;
 
 /*
-   Copyright 2012-2018 Bo Zimmerman
+   Copyright 2012-2025 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -240,10 +240,16 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			{
 				str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
 			}
-			catch(final ArrayIndexOutOfBoundsException ae)
+			catch(final Exception e1)
 			{
-				//just eat it .. but .. log it
-				config.getLogger().severe("Last Modified date of "+response.getLastModified().getTime()+" caused an arrayindex in HTTPReqProcessor #1.");
+				try
+				{
+					str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
+				}
+				catch(final Exception e2)
+			{
+					str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine("THU, 01 JAN 1970 00:00:00 000"));
+				}
 			}
 		}
 		if(config.isDebugging())
@@ -258,7 +264,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			final String formattedDate = HTTPIOHandler.DATE_FORMAT.format(now);
 			str.append(HTTPHeader.Common.DATE.makeLine(formattedDate));
 		}
-		catch(final java.lang.ArrayIndexOutOfBoundsException e)
+		catch(final IndexOutOfBoundsException e)
 		{
 			// just eat it.
 			config.getLogger().severe("Last Modified date of "+response.getLastModified().getTime()+" caused an arrayindex in HTTPReqProcessor #2.");
@@ -457,7 +463,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			try
 			{
 				stats.startProcessing(); // synchronization is not required, so long as endProcessing is always called
-				final SimpleServlet servletInstance = servletClass.newInstance(); // instantiate a new servlet instance!
+				final SimpleServlet servletInstance = servletClass.getDeclaredConstructor().newInstance(); // instantiate a new servlet instance!
 				if(request.getMethod() == HTTPMethod.GET)
 					servletInstance.doGet(servletRequest, servletResponse);
 				else
@@ -633,7 +639,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				HTTPOutputConverter converter;
 				try
 				{
-					converter = converterClass.newInstance();
+					converter = converterClass.getDeclaredConstructor().newInstance();
 					return new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), System.currentTimeMillis(), true);
 				}
 				catch (final Exception e)
@@ -723,11 +729,21 @@ public class HTTPReqProcessor implements HTTPFileGetter
 						try
 						{
 							HTTPOutputConverter converter;
-							converter = converterClass.newInstance();
+							converter = converterClass.getDeclaredConstructor().newInstance();
 							extraHeaders.put(HTTPHeader.Common.CACHE_CONTROL, "no-cache");
 							final long dateTime=System.currentTimeMillis();
 							if(dateTime >= 0)
+							{
+								try
+								{
 								extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
+								}
+								catch(final ArrayIndexOutOfBoundsException ae)
+								{
+									Log.errOut("ArrayIndexOutOfBoundsException (format failed): DateTime was "+dateTime);
+									extraHeaders.put(HTTPHeader.Common.EXPIRES, "MON, 01 Jan 1970 01:00:00 000");
+								}
+							}
 							buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, HTTPStatus.S200_OK, buffers.flushToBuffer()), dateTime, true);
 							buffers = handleEncodingRequest(request, null, buffers, extraHeaders);
 						}

@@ -1,7 +1,7 @@
 package com.planet_ink.coffee_common.collections;
 
 /*
-Copyright 2015-2018 Bo Zimmerman
+   Copyright 2015-2025 Bo Zimmerman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ limitations under the License.
 public class KeyPairWildSearchTree<V> extends KeyPairSearchTree<V>
 {
 	/**
-	 * Retreive the value for the longest key that
+	 * Retrieve the value for the longest key that
 	 * the given string starts with, with wildcard support
 	 * @param fullStr the string that might start with a key
 	 * @param startNode the search node to start with
@@ -89,11 +89,12 @@ public class KeyPairWildSearchTree<V> extends KeyPairSearchTree<V>
 	}
 
 	/**
-	 * Retreive the value for the longest key that
+	 * Retrieve the value for the longest key that
 	 * the given string starts with
 	 * @param fullStr the string that might start with a key
 	 * @return the value
 	 */
+	@Override
 	public Pair<String,V> findLongestValue(final String fullStr)
 	{
 		return findLongestValueWithWildcards(fullStr,root,new int[]{0});
