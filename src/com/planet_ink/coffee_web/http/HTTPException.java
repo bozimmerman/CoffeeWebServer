@@ -10,6 +10,7 @@ import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
+import com.planet_ink.coffee_web.interfaces.HTTPResponse;
 import com.planet_ink.coffee_web.interfaces.ProtocolHandler;
 import com.planet_ink.coffee_web.util.CWDataBuffers;
 import com.planet_ink.coffee_web.util.CWThread;
@@ -45,7 +46,7 @@ public class HTTPException extends Exception
 {
 	private static final long 	serialVersionUID = 9016082700560347737L;
 
-	private final HTTPStatus 			status;		// status to return
+	private 	  HTTPStatus 			status;		// status to return
 	private final String 				body;		// optional body to send back with the error, usually ""
 	private final Map<HTTPHeader,String>errorHeaders = new Hashtable<HTTPHeader,String>(); // any optional/extraneous headers to send back
 	private final boolean				isDebugging;
@@ -205,7 +206,11 @@ public class HTTPException extends Exception
 					if(converterClass != null)
 					{
 						final HTTPOutputConverter converter=converterClass.getDeclaredConstructor().newInstance();
-						finalBody=new CWDataBuffers(converter.convertOutput(config, request, errorFile, status, fileBytes.flushToBuffer()),0,true);
+						final HTTPResponse resp = new HTTPReqResponse();
+						resp.setStatusCode(status);
+						finalBody=new CWDataBuffers(converter.convertOutput(config, request, errorFile, resp, fileBytes.flushToBuffer()),0,true);
+						status = resp.getStatus();
+						headers.putAll(resp.getPopulatedHeaders());
 					}
 					else
 						finalBody=fileBytes;

@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
 
 import com.planet_ink.coffee_web.interfaces.DataBuffers;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
@@ -41,13 +39,10 @@ import com.planet_ink.coffee_web.util.CWThread;
  * @author Bo Zimmerman
  *
  */
-public class ServletResponse implements SimpleServletResponse
+public class ServletResponse extends HTTPReqResponse implements SimpleServletResponse
 {
-	private int		 					statusCode 	= HTTPStatus.S200_OK.getStatusCode();
 	private String 						statusString= HTTPStatus.S200_OK.description();
-	private final Map<String, String> 	headers 	= new Hashtable<String, String>();
 	private final ByteArrayOutputStream	bout		= new ByteArrayOutputStream();
-	private final Map<String,String>	cookies		= new Hashtable<String,String>();
 	private static final String			EOLN		= HTTPIOHandler.EOLN;
 
 	/**
@@ -57,32 +52,23 @@ public class ServletResponse implements SimpleServletResponse
 	{
 	}
 
-	public int getStatusCode()
+	/**
+	 * Construct a response object for servlets
+	 * @param response the response to base this response on
+	 */
+	public ServletResponse(final HTTPReqResponse response)
 	{
-		return statusCode;
+		super(response);
 	}
 
 	@Override
-	public void setStatusCode(final int httpStatusCode)
+	public void setStatusCode(final HTTPStatus httpStatusCode)
 	{
-		statusCode = httpStatusCode;
-		final HTTPStatus status = HTTPStatus.find(httpStatusCode);
-		if(status!=null)
-			statusString = status.description();
+		super.setStatusCode(httpStatusCode);
+		if(httpStatusCode!=null)
+			statusString = httpStatusCode.description();
 		else
 			statusString = "Unknown";
-	}
-
-	@Override
-	public void setHeader(final String name, final String value)
-	{
-		headers.put(name, value);
-	}
-
-	@Override
-	public void setMimeType(final String mimeType)
-	{
-		headers.put(HTTPHeader.Common.CONTENT_TYPE.toString(), mimeType);
 	}
 
 	@Override
@@ -152,11 +138,5 @@ public class ServletResponse implements SimpleServletResponse
 			}
 		}
 		return bufs;
-	}
-
-	@Override
-	public void setCookie(final String name, final String value)
-	{
-		cookies.put(name, value);
 	}
 }

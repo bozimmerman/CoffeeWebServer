@@ -13,6 +13,7 @@ import com.planet_ink.coffee_common.logging.Log;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPOutputConverter;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
+import com.planet_ink.coffee_web.interfaces.HTTPResponse;
 import com.planet_ink.coffee_web.server.WebServer;
 import com.planet_ink.coffee_web.util.CWConfig;
 
@@ -88,7 +89,7 @@ public class CGIProcessor implements HTTPOutputConverter
 	 * @throws HTTPException
 	 */
 	@Override
-	public ByteBuffer convertOutput(final CWConfig config, final HTTPRequest request, final File pageFile, final HTTPStatus status, final ByteBuffer buffer) throws HTTPException
+	public ByteBuffer convertOutput(final CWConfig config, final HTTPRequest request, final File pageFile, final HTTPResponse response, final ByteBuffer buffer) throws HTTPException
 	{
 		// http://tools.ietf.org/html/draft-robinson-www-interface-00
 		if(request == null)
