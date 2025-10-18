@@ -248,7 +248,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(new Date(System.currentTimeMillis()))));
 				}
 				catch(final Exception e2)
-			{
+				{
 					str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine("THU, 01 JAN 1970 00:00:00 000"));
 				}
 			}
@@ -741,7 +741,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 							{
 								try
 								{
-								extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
+									extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
 								}
 								catch(final ArrayIndexOutOfBoundsException ae)
 								{
