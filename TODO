@@ -1,3 +1,7 @@
+** Support X=Accel-Buffering: no to force server to send output as it is put into a buffer
+** support Content-Type: text/event-stream  to force server to send output as it is put into a buffer
+** Cache-Control: no-cache, no-store, private  to force server to send output as it is put into a buffer
+
 * If-Match
 
 * If-Range
