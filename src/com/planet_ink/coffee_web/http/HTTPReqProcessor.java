@@ -452,7 +452,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	 * @return the output from the servlet
 	 * @throws HTTPException
 	 */
-	private DataBuffers executeServlet(final HTTPRequest request, final Class<? extends SimpleServlet> servletClass) throws HTTPException
+	private DataBuffers executeServlet(final HTTPRequest request, final SimpleServlet servlet) throws HTTPException
 	{
 		// servlet found -- full stream ahead </pun>
 		final ServletResponse servletResponse = new ServletResponse(); // generate a response object
@@ -460,18 +460,17 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		final SimpleServletRequest servletRequest = new ServletRequest(session, request);
 		try
 		{
-			final RequestStats stats = config.getServletMan().getServletStats(servletClass);
+			final RequestStats stats = config.getServletMan().getServletStats(servlet);
 			final long startTime = System.nanoTime(); // for stat keeping
 			try
 			{
 				stats.startProcessing(); // synchronization is not required, so long as endProcessing is always called
-				final SimpleServlet servletInstance = servletClass.getDeclaredConstructor().newInstance(); // instantiate a new servlet instance!
 				if(request.getMethod() == HTTPMethod.GET)
-					servletInstance.doGet(servletRequest, servletResponse);
+					servlet.doGet(servletRequest, servletResponse);
 				else
 				if(request.getMethod() == HTTPMethod.POST)
-					servletInstance.doPost(servletRequest, servletResponse);
-				servletInstance.service(request.getMethod(), servletRequest, servletResponse);
+					servlet.doPost(servletRequest, servletResponse);
+				servlet.service(request.getMethod(), servletRequest, servletResponse);
 				return servletResponse.generateOutput(request); // the generated output, yea!
 			}
 			finally
@@ -606,11 +605,9 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		// first thing is to check for servlets
 		if(url.length > 1)
 		{
-			final Class<? extends SimpleServlet> servletClass = config.getServletMan().findServlet(url[1]);
-			if(servletClass != null)
-			{
-				return executeServlet(request,servletClass);
-			}
+			final SimpleServlet servletInstance = config.getServletMan().findServlet(url[1]);
+			if(servletInstance != null)
+				return executeServlet(request,servletInstance);
 		}
 
 		// not a servlet, so it must be a file path
@@ -684,10 +681,10 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		{
 			if(request.getUrlPath().length()>1)
 			{
-				final Class<? extends SimpleServlet> servletClass = config.getServletMan().findServlet(request.getUrlPath().substring(1));
-				if(servletClass != null)
+				final SimpleServlet servletInstance = config.getServletMan().findServlet(request.getUrlPath().substring(1));
+				if(servletInstance != null)
 				{
-					return executeServlet(request,servletClass);
+					return executeServlet(request,servletInstance);
 				}
 			}
 

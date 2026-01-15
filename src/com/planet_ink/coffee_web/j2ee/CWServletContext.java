@@ -1,15 +1,14 @@
 package com.planet_ink.coffee_web.j2ee;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -22,11 +21,8 @@ import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
 
 import com.planet_ink.coffee_web.interfaces.SimpleServlet;
-import com.planet_ink.coffee_web.interfaces.SimpleServletSession;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
@@ -169,7 +165,7 @@ public class CWServletContext implements ServletContext
 	@Override
 	public Servlet getServlet(final String name) throws ServletException
 	{
-		final Class<? extends SimpleServlet> servlet = config.getServletMan().findServlet(name);
+		final SimpleServlet servlet = config.getServletMan().findServlet(name);
 		if(servlet == null)
 			return null;
 		// TODO Auto-generated method stub
@@ -179,6 +175,7 @@ public class CWServletContext implements ServletContext
 	@Override
 	public Enumeration<Servlet> getServlets()
 	{
+		//config.getServletMan().getServlets().iterator();
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -193,22 +190,19 @@ public class CWServletContext implements ServletContext
 	@Override
 	public void log(final String msg)
 	{
-		// TODO Auto-generated method stub
-
+		config.getLogger().log(Level.INFO, msg);
 	}
 
 	@Override
 	public void log(final Exception exception, final String msg)
 	{
-		// TODO Auto-generated method stub
-
+		config.getLogger().log(Level.SEVERE, msg, exception);
 	}
 
 	@Override
 	public void log(final String message, final Throwable throwable)
 	{
-		// TODO Auto-generated method stub
-
+		config.getLogger().log(Level.SEVERE, message, throwable);
 	}
 
 	@Override
@@ -234,14 +228,17 @@ public class CWServletContext implements ServletContext
 	@Override
 	public Enumeration<String> getInitParameterNames()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final Vector<String> v = new Vector<String>();
+		for(final Enumeration<Object> e = config.getINIFile().keys();e.hasMoreElements();)
+			v.add(e.toString());
+		return v.elements();
 	}
 
 	@Override
 	public boolean setInitParameter(final String name, final String value)
 	{
-		return false;
+		config.getINIFile().put(name, value);
+		return true;
 	}
 
 	@Override
@@ -282,29 +279,25 @@ public class CWServletContext implements ServletContext
 	@Override
 	public Dynamic addServlet(final String servletName, final String className)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public Dynamic addServlet(final String servletName, final Servlet servlet)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public Dynamic addServlet(final String servletName, final Class<? extends Servlet> servletClass)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public Dynamic addJspFile(final String servletName, final String jspFile)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
@@ -331,43 +324,37 @@ public class CWServletContext implements ServletContext
 	@Override
 	public javax.servlet.FilterRegistration.Dynamic addFilter(final String filterName, final String className)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public javax.servlet.FilterRegistration.Dynamic addFilter(final String filterName, final Filter filter)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public javax.servlet.FilterRegistration.Dynamic addFilter(final String filterName, final Class<? extends Filter> filterClass)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public <T extends Filter> T createFilter(final Class<T> clazz) throws ServletException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public FilterRegistration getFilterRegistration(final String filterName)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
 	public Map<String, ? extends FilterRegistration> getFilterRegistrations()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new java.lang.UnsupportedOperationException();
 	}
 
 	@Override
@@ -436,8 +423,7 @@ public class CWServletContext implements ServletContext
 	@Override
 	public ClassLoader getClassLoader()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return Thread.currentThread().getContextClassLoader();
 	}
 
 	@Override
@@ -457,8 +443,7 @@ public class CWServletContext implements ServletContext
 	@Override
 	public int getSessionTimeout()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return (int)(config.getMaxThreadIdleMs()/1000L/60L);
 	}
 
 	@Override

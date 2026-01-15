@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
 import com.planet_ink.coffee_web.interfaces.SimpleServletSession;
+import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
 Copyright 2026-2026 Bo Zimmerman
@@ -24,12 +25,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+@SuppressWarnings("deprecation")
 public class CWHttpSession implements HttpSession
 {
 	final SimpleServletSession sess;
+	final CWConfig config;
 
-	public CWHttpSession(final SimpleServletSession sess)
+	public CWHttpSession(final CWConfig config, final SimpleServletSession sess)
 	{
+		this.config=config;
 		this.sess = sess;
 	}
 	@Override
@@ -53,8 +57,7 @@ public class CWHttpSession implements HttpSession
 	@Override
 	public ServletContext getServletContext()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CWServletContext(config);
 	}
 
 	@Override
@@ -69,11 +72,10 @@ public class CWHttpSession implements HttpSession
 		return (int)(sess.getIdleExpirationInterval()/1000);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public HttpSessionContext getSessionContext()
 	{
-		return new CWHttpSessionContext(sess.getManager());
+		return new CWHttpSessionContext(config,sess.getManager());
 	}
 
 	@Override

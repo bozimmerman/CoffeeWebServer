@@ -7,13 +7,17 @@ import javax.servlet.http.HttpSessionContext;
 
 import com.planet_ink.coffee_web.interfaces.ServletSessionManager;
 import com.planet_ink.coffee_web.interfaces.SimpleServletSession;
+import com.planet_ink.coffee_web.util.CWConfig;
 
+@SuppressWarnings("deprecation")
 public class CWHttpSessionContext implements HttpSessionContext
 {
 	final ServletSessionManager mgr;
+	final CWConfig config;
 
-	public CWHttpSessionContext(final ServletSessionManager mgr)
+	public CWHttpSessionContext(final CWConfig config, final ServletSessionManager mgr)
 	{
+		this.config=config;
 		this.mgr = mgr;
 	}
 
@@ -22,7 +26,7 @@ public class CWHttpSessionContext implements HttpSessionContext
 	{
 		final SimpleServletSession sess = this.mgr.findSession(sessionId);
 		if(sess != null)
-			return new CWHttpSession(sess);
+			return new CWHttpSession(config,sess);
 		return null;
 	}
 
