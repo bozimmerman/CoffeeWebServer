@@ -1,6 +1,7 @@
 package com.planet_ink.coffee_web.interfaces;
 
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -97,6 +98,13 @@ public interface HTTPRequest
 	 * @return The header value
 	 */
 	public String getHeader(String name);
+
+	/**
+	 * Gets the request header names as supplied by the client
+	 *
+	 * @return The header names
+	 */
+	public Enumeration<String> getHeaders();
 
 	/**
 	 * Gets the client's network address

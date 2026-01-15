@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -21,6 +22,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import com.planet_ink.coffee_common.collections.IteratorEnumeration;
 import com.planet_ink.coffee_web.interfaces.HTTPIOHandler;
 import com.planet_ink.coffee_web.interfaces.HTTPRequest;
 import com.planet_ink.coffee_web.util.CWConfig;
@@ -1104,6 +1106,16 @@ public class CWHTTPRequest implements HTTPRequest
 	public String getHeader(final String name)
 	{
 		return headers.get(name.toLowerCase());
+	}
+
+	/**
+	 * Gets the request header names as supplied by the client
+	 *
+	 * @return The header names
+	 */
+	public Enumeration<String> getHeaders()
+	{
+		return new IteratorEnumeration<String>(headers.keySet().iterator());
 	}
 
 	/**

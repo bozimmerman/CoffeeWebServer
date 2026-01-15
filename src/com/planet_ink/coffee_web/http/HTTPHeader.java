@@ -99,6 +99,7 @@ public interface HTTPHeader
 		ACCEPT("Accept"),
 		STATUS("Status"),
 		ACCEPT_ENCODING("Accept-Encoding"),
+		ACCEPT_LANGUAGE("Accept-Language"),
 		ACCEPT_RANGES("Accept-Ranges","bytes"),
 		ALLOW("Allow",HTTPMethod.getAllowedList()),
 		CACHE_CONTROL("Cache-Control"),

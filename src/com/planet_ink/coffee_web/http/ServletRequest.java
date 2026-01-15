@@ -2,6 +2,7 @@ package com.planet_ink.coffee_web.http;
 
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -218,5 +219,11 @@ public class ServletRequest implements SimpleServletRequest
 	public float getHttpVer()
 	{
 		return request.getHttpVer();
+	}
+
+	@Override
+	public Enumeration<String> getHeaders()
+	{
+		return request.getHeaders();
 	}
 }

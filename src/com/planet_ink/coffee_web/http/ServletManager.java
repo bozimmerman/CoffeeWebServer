@@ -34,9 +34,9 @@ import com.planet_ink.coffee_web.util.RequestStats;
  */
 public class ServletManager implements SimpleServletManager
 {
-	private final Map<String,Class<? extends SimpleServlet>> 		  servlets; 	// map of registered servlets by context
+	private final Map<String,Class<? extends SimpleServlet>> 		servlets; 	// map of registered servlets by context
 	private final Map<Class<? extends SimpleServlet>, RequestStats> servletStats; // stats about each servlet
-	private final Map<Class<? extends SimpleServlet>, Boolean> 		  servletInit; // whether a servlets been initialized
+	private final Map<Class<? extends SimpleServlet>, Boolean> 		servletInit; // whether a servlets been initialized
 
 	public ServletManager(final CWConfig config)
 	{
@@ -52,8 +52,7 @@ public class ServletManager implements SimpleServletManager
 			try
 			{
 				@SuppressWarnings("unchecked")
-				final
-				Class<? extends SimpleServlet> servletClass=(Class<? extends SimpleServlet>) Class.forName(className);
+				final Class<? extends SimpleServlet> servletClass=(Class<? extends SimpleServlet>) Class.forName(className);
 				registerServlet(context, servletClass);
 			}
 			catch (final ClassNotFoundException e)
