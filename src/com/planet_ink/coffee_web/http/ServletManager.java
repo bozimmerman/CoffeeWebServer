@@ -1,5 +1,6 @@
 package com.planet_ink.coffee_web.http;
 
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
@@ -35,9 +36,9 @@ import com.planet_ink.coffee_web.util.RequestStats;
  */
 public class ServletManager implements SimpleServletManager
 {
-	private final Map<String, SimpleServlet>					servlets;		// map of registered servlets by context
-	private final Map<String, Class<? extends SimpleServlet>>	servletClasses;	// map of registered servlets by context
-	private final Map<SimpleServlet, RequestStats>				servletStats;	// stats about each servlet
+	private final Map<String, SimpleServlet>		servlets;		// map of registered servlets by context
+	private final Map<String, Class<?>>				servletClasses;	// map of registered servlets by context
+	private final Map<SimpleServlet, RequestStats>	servletStats;	// stats about each servlet
 	private final CWConfig config;
 
 	public ServletManager(final CWConfig config)
@@ -45,7 +46,7 @@ public class ServletManager implements SimpleServletManager
 		this.config = config;
 		servlets = new Hashtable<String,SimpleServlet>();
 		servletStats = new Hashtable<SimpleServlet, RequestStats>();
-		servletClasses = new Hashtable<String, Class<? extends SimpleServlet>>();
+		servletClasses = new Hashtable<String, Class<?>>();
 
 		for(final String context : config.getServletClasses().keySet())
 		{
@@ -99,6 +100,25 @@ public class ServletManager implements SimpleServletManager
 	}
 
 	/**
+	 * Find whether the given class is ultimately a javax.servlet interface
+	 * @param cls the class
+	 * @return true if it is, false otherwise
+	 */
+	private static boolean isJavaxServlet(final Class<?> cls)
+	{
+		if (cls == null)
+			return false;
+		for (final Class<?> iface : cls.getInterfaces())
+		{
+			if (iface.getName().equals("javax.servlet.Servlet"))
+				return true;
+			if(isJavaxServlet(iface))
+				return true;
+		}
+		return isJavaxServlet(cls.getSuperclass());
+	}
+
+	/**
 	 * Returns a servlet (if any) that handles the given uri context.
 	 * if none is found, NULL is returned.
 	 * @param rootContext the uri context
@@ -115,11 +135,37 @@ public class ServletManager implements SimpleServletManager
 			c=servlets.get(rootContext);
 			if(c != null)
 				return c;
-			final Class<? extends SimpleServlet> ssClass = this.servletClasses.get(rootContext);
+			final Class<?> ssClass = this.servletClasses.get(rootContext);
 			try
 			{
-				c = ssClass.getDeclaredConstructor().newInstance();
-				registerServlet(rootContext, c);
+				final Object o = ssClass.getDeclaredConstructor().newInstance();
+				if(o instanceof SimpleServlet)
+					c = (SimpleServlet)o;
+				else
+				if(isJavaxServlet(o.getClass()))
+				{
+					try
+					{
+						final Class<?> javaxServletClass = Class.forName("javax.servlet.Servlet");
+						final Class<?> wrapper = Class.forName("com.planet_ink.coffee_web.j2ee.CWServlet");
+						final Constructor<?> constructor = wrapper.getConstructor(String.class, CWConfig.class, javaxServletClass);
+						c = (SimpleServlet)constructor.newInstance(rootContext, config, o);
+					}
+					catch(final Exception e)
+					{
+						config.getLogger().log(Level.SEVERE, "No valid servlet found for "+rootContext, e);
+						return null;
+					}
+				}
+				else
+					c = null;
+				if(c == null)
+				{
+					config.getLogger().log(Level.SEVERE, "No valid servlet found for "+rootContext);
+					this.servletClasses.remove(rootContext);
+				}
+				else
+					registerServlet(rootContext, c);
 			}
 			catch (final Exception e)
 			{

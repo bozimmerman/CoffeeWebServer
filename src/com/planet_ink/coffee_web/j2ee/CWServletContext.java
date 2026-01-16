@@ -43,17 +43,18 @@ limitations under the License.
 public class CWServletContext implements ServletContext
 {
 	private final CWConfig config;
+	private final String path;
 
-	public CWServletContext(final CWConfig config)
+	public CWServletContext(final CWConfig config, final String path)
 	{
 		this.config=config;
+		this.path = path;
 	}
 
 	@Override
 	public String getContextPath()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return path;
 	}
 
 	@Override

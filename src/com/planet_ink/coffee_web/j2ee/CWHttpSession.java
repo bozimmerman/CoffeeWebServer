@@ -30,9 +30,11 @@ public class CWHttpSession implements HttpSession
 {
 	final SimpleServletSession sess;
 	final CWConfig config;
+	final String path;
 
-	public CWHttpSession(final CWConfig config, final SimpleServletSession sess)
+	public CWHttpSession(final String path, final CWConfig config, final SimpleServletSession sess)
 	{
+		this.path=path;
 		this.config=config;
 		this.sess = sess;
 	}
@@ -57,7 +59,7 @@ public class CWHttpSession implements HttpSession
 	@Override
 	public ServletContext getServletContext()
 	{
-		return new CWServletContext(config);
+		return new CWServletContext(config, path);
 	}
 
 	@Override
@@ -75,7 +77,7 @@ public class CWHttpSession implements HttpSession
 	@Override
 	public HttpSessionContext getSessionContext()
 	{
-		return new CWHttpSessionContext(config,sess.getManager());
+		return new CWHttpSessionContext(path,config,sess.getManager());
 	}
 
 	@Override

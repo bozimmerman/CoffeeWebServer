@@ -1,17 +1,18 @@
 package com.planet_ink.coffee_web.j2ee;
 
-import java.io.IOException;
-import java.util.Enumeration;
+import java.util.logging.Level;
 
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import com.planet_ink.coffee_common.collections.EmptyEnumeration;
+import com.planet_ink.coffee_web.http.HTTPException;
+import com.planet_ink.coffee_web.http.HTTPMethod;
 import com.planet_ink.coffee_web.interfaces.SimpleServlet;
+import com.planet_ink.coffee_web.interfaces.SimpleServletRequest;
+import com.planet_ink.coffee_web.interfaces.SimpleServletResponse;
+import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
 Copyright 2026-2026 Bo Zimmerman
@@ -28,71 +29,58 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-public class CWServlet extends javax.servlet.GenericServlet
+public class CWServlet implements SimpleServlet
 {
-	private static final long serialVersionUID = 15535L;
+	private final Servlet servlet;
+	private final String path;
+	private final CWConfig config;
 
-	final SimpleServlet servlet;;
-
-	public CWServlet(final SimpleServlet servlet)
+	public CWServlet(final String path, final CWConfig config, final Servlet servlet)
 	{
+		this.config=config;
+		this.path = path;
 		this.servlet = servlet;
 	}
 
 	@Override
-	public void init(final ServletConfig config) throws ServletException
+	public void init()
 	{
-		this.servlet.init();
-	}
-
-	@Override
-	public ServletConfig getServletConfig()
-	{
-		return new ServletConfig()
+		try
 		{
-			@Override
-			public String getServletName()
-			{
-				return servlet.toString();
-			}
-
-			@Override
-			public ServletContext getServletContext()
-			{
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public String getInitParameter(final String name)
-			{
-				return null;
-			}
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public Enumeration<String> getInitParameterNames()
-			{
-				return EmptyEnumeration.instance;
-			}
-		};
+			servlet.init(new CWServletConfig(config, path, servlet));
+		}
+		catch (final ServletException e)
+		{
+			config.getLogger().log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
 	@Override
-	public void service(final ServletRequest req, final ServletResponse res) throws ServletException, IOException
+	public void doGet(final SimpleServletRequest request, final SimpleServletResponse response) throws HTTPException
 	{
-		//TODO: reverse conversion?!
+		service(HTTPMethod.GET, request, response);
 	}
 
 	@Override
-	public String getServletInfo()
+	public void doPost(final SimpleServletRequest request, final SimpleServletResponse response) throws HTTPException
 	{
-		return "";
+		service(HTTPMethod.POST, request, response);
 	}
 
 	@Override
-	public void destroy()
+	public void service(final HTTPMethod method, final SimpleServletRequest request, final SimpleServletResponse response)
+			throws HTTPException
 	{
-
+		final ServletRequest i2eeReq = new CWHttpServletRequest(this.path,request);
+		final ServletResponse i2eeResp = null; //TODO: new CWHttpServletResponse(response);
+		try
+		{
+			servlet.service(i2eeReq, i2eeResp);
+		}
+		catch(final Exception e)
+		{
+			throw new HTTPException(e);
+		}
 	}
+
 }

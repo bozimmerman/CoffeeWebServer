@@ -8,6 +8,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -56,12 +57,15 @@ limitations under the License.
 public class CWHttpServletRequest implements HttpServletRequest
 {
 
-	final Map<String, Object>	attributes	= new Hashtable<String, Object>();
-	final SimpleServletRequest	req;
-	final CWConfig				config;
+	private final Map<String, Object>	attributes	= new Hashtable<String, Object>();
+	private final SimpleServletRequest	req;
+	private final CWConfig				config;
+	private final String				path;
 
-	public CWHttpServletRequest(final SimpleServletRequest req)
+
+	public CWHttpServletRequest(final String path, final SimpleServletRequest req)
 	{
+		this.path=path;
 		this.config = ((CWThread)Thread.currentThread()).getConfig();
 		this.req = req;
 	}
@@ -174,21 +178,43 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public Enumeration<String> getParameterNames()
 	{
-		return new IteratorEnumeration<String>(req.getUrlParameters().iterator());
+		return new IteratorEnumeration<String>(getParameterMap().keySet().iterator());
 	}
 
 	@Override
 	public String[] getParameterValues(final String name)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return getParameterMap().get(name);
 	}
 
 	@Override
 	public Map<String, String[]> getParameterMap()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final Set<String> done = new HashSet<String>();
+		final Map<String, String[]> parameters = new HashMap<String, String[]>();
+		for(final String s : req.getUrlParameters())
+		{
+			if(req.isUrlParameter(s+"1") && (!done.contains(s)))
+			{
+				done.add(s);
+				final ArrayList<String> values = new ArrayList<String>();
+				values.add(req.getUrlParameter(s));
+				for(int i=1;req.isUrlParameter(s+i);i++)
+				{
+					done.add(s+i);
+					values.add(req.getUrlParameter(s+i));
+				}
+				final String[] vals = values.toArray(new String[values.size()]);
+				parameters.put(s, vals);
+
+			}
+		}
+		for(final String s : req.getUrlParameters())
+		{
+			if(!done.contains(s))
+				parameters.put(s, new String[] {req.getUrlParameter(s)});
+		}
+		return parameters;
 	}
 
 	@Override
@@ -371,28 +397,24 @@ public class CWHttpServletRequest implements HttpServletRequest
 	public AsyncContext startAsync(final ServletRequest servletRequest, final ServletResponse servletResponse)
 			throws IllegalStateException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public boolean isAsyncStarted()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isAsyncSupported()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public AsyncContext getAsyncContext()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -540,13 +562,13 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public HttpSession getSession(final boolean create)
 	{
-		return new CWHttpSession(this.config,this.req.getSession());
+		return new CWHttpSession(this.path,this.config,this.req.getSession());
 	}
 
 	@Override
 	public HttpSession getSession()
 	{
-		return new CWHttpSession(this.config,this.req.getSession());
+		return new CWHttpSession(this.path,this.config,this.req.getSession());
 	}
 
 	@Override

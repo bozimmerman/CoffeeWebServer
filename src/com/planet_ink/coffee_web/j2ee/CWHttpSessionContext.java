@@ -14,11 +14,13 @@ public class CWHttpSessionContext implements HttpSessionContext
 {
 	final ServletSessionManager mgr;
 	final CWConfig config;
+	final String path;
 
-	public CWHttpSessionContext(final CWConfig config, final ServletSessionManager mgr)
+	public CWHttpSessionContext(final String path, final CWConfig config, final ServletSessionManager mgr)
 	{
 		this.config=config;
 		this.mgr = mgr;
+		this.path = path;
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public class CWHttpSessionContext implements HttpSessionContext
 	{
 		final SimpleServletSession sess = this.mgr.findSession(sessionId);
 		if(sess != null)
-			return new CWHttpSession(config,sess);
+			return new CWHttpSession(path,config,sess);
 		return null;
 	}
 
