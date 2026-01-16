@@ -1,10 +1,16 @@
 package com.planet_ink.coffee_web.j2ee;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -34,7 +40,10 @@ import javax.servlet.http.Part;
 
 import com.planet_ink.coffee_common.collections.EmptyEnumeration;
 import com.planet_ink.coffee_common.collections.IteratorEnumeration;
+import com.planet_ink.coffee_common.collections.Pair;
 import com.planet_ink.coffee_web.http.HTTPHeader;
+import com.planet_ink.coffee_web.http.MultiPartData;
+import com.planet_ink.coffee_web.interfaces.FileManager;
 import com.planet_ink.coffee_web.interfaces.SimpleServletRequest;
 import com.planet_ink.coffee_web.util.CWConfig;
 import com.planet_ink.coffee_web.util.CWThread;
@@ -61,6 +70,7 @@ public class CWHttpServletRequest implements HttpServletRequest
 	private final SimpleServletRequest	req;
 	private final CWConfig				config;
 	private final String				path;
+	private String						charEnc = null;
 
 
 	public CWHttpServletRequest(final String path, final SimpleServletRequest req)
@@ -86,15 +96,13 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getCharacterEncoding()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return charEnc;
 	}
 
 	@Override
 	public void setCharacterEncoding(final String env) throws UnsupportedEncodingException
 	{
-		// TODO Auto-generated method stub
-
+		charEnc = env;
 	}
 
 	@Override
@@ -220,8 +228,7 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getProtocol()
 	{
-		//TODO: this should come from the request
-		return "HTTP/1.1";
+		return "HTTP/"+req.getHttpVer();
 	}
 
 	@Override
@@ -342,14 +349,24 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public RequestDispatcher getRequestDispatcher(final String path)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getRealPath(final String path)
 	{
-		// TODO Auto-generated method stub
+		if (path == null)
+			return null;
+		final Pair<String,String> mountPath = config.getMount(req.getHost(), req.getClientPort(), path);
+		if (mountPath != null)
+		{
+			String newFullPath = path.substring(mountPath.first.length());
+			if (newFullPath.startsWith("/") && mountPath.second.endsWith("/"))
+				newFullPath = newFullPath.substring(1);
+			final String realPath = mountPath.second + newFullPath;
+			final FileManager mgr = config.getFileManager();
+			return realPath.replace('/', mgr.getFileSeparator());
+		}
 		return null;
 	}
 
@@ -362,15 +379,13 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getLocalName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return req.getHost();
 	}
 
 	@Override
 	public String getLocalAddr()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "127.0.0.1";
 	}
 
 	@Override
@@ -382,15 +397,13 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public ServletContext getServletContext()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CWServletContext(config, path);
 	}
 
 	@Override
 	public AsyncContext startAsync() throws IllegalStateException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new IllegalStateException();
 	}
 
 	@Override
@@ -421,14 +434,12 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public DispatcherType getDispatcherType()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return DispatcherType.REQUEST;
 	}
 
 	@Override
 	public String getAuthType()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -444,8 +455,19 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public long getDateHeader(final String name)
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		final String httpDate = getHeader(name);
+		if(httpDate == null)
+			return -1;
+		try
+		{
+			final DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+			final ZonedDateTime zonedDateTime = ZonedDateTime.parse(httpDate, formatter);
+			return zonedDateTime.toInstant().toEpochMilli();
+		}
+		catch (final DateTimeParseException e)
+		{
+			return -1;
+		}
 	}
 
 	@Override
@@ -540,8 +562,14 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getRequestURI()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		String url = req.getFullRequest();
+		int x = url.indexOf("://");
+		if(x>0)
+			url = url.substring(x+3);
+		x = url.indexOf('?');
+		if(x>0)
+			return url.substring(0,x);
+		return url;
 	}
 
 	@Override
@@ -607,38 +635,128 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public boolean authenticate(final HttpServletResponse response) throws IOException, ServletException
 	{
-		return false;
+		throw new ServletException("Not supported");
 	}
 
 	@Override
 	public void login(final String username, final String password) throws ServletException
 	{
+		throw new ServletException("Not supported");
 	}
 
 	@Override
 	public void logout() throws ServletException
 	{
+		throw new ServletException("Not supported");
 	}
 
 	@Override
 	public Collection<Part> getParts() throws IOException, ServletException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final ArrayList<Part> parts = new ArrayList<Part>();
+		for(final MultiPartData m : req.getMultiParts())
+		{
+			parts.add(new Part()
+			{
+				InputStream i = null;
+				final MultiPartData mp = m;
+				@Override
+				public InputStream getInputStream() throws IOException
+				{
+					if(i == null)
+						i = new ByteArrayInputStream(mp.getData());
+					return i;
+				}
+
+				@Override
+				public String getContentType()
+				{
+					return mp.getContentType();
+				}
+
+				@Override
+				public String getName()
+				{
+					if(mp.getVariables().containsKey("name"))
+						return mp.getVariables().get("name");
+					if(mp.getVariables().containsKey("NAME"))
+						return mp.getVariables().get("NAME");
+					return "";
+				}
+
+				@Override
+				public String getSubmittedFileName()
+				{
+					if(mp.getVariables().containsKey("filename"))
+						return mp.getVariables().get("filename");
+					if(mp.getVariables().containsKey("FILENAME"))
+						return mp.getVariables().get("FILENAME");
+					return "";
+				}
+
+				@Override
+				public long getSize()
+				{
+					return mp.getData().length;
+				}
+
+				@Override
+				public void write(final String fileName) throws IOException
+				{
+					try (FileOutputStream o = new FileOutputStream(fileName))
+					{
+						o.write(mp.getData());
+					}
+				}
+
+				@Override
+				public void delete() throws IOException
+				{
+					req.getMultiParts().remove(mp);
+				}
+
+				@Override
+				public String getHeader(final String name)
+				{
+					return mp.getHeaders().get(name);
+				}
+
+				@Override
+				public Collection<String> getHeaders(final String name)
+				{
+					final List<String> l = new ArrayList<String>(1);
+					final String s = getHeader(name);
+					if(s != null)
+						l.add(s);
+					return l;
+				}
+
+				@Override
+				public Collection<String> getHeaderNames()
+				{
+					return mp.getHeaders().keySet();
+				}
+
+			});
+		}
+		return parts;
 	}
 
 	@Override
 	public Part getPart(final String name) throws IOException, ServletException
 	{
-		// TODO Auto-generated method stub
+		if(req.getMultiParts().size()==0)
+			throw new ServletException("No parts");
+		for(final Part P : getParts())
+			if(name.equals(P.getName()))
+				return P;
 		return null;
 	}
 
 	@Override
 	public <T extends HttpUpgradeHandler> T upgrade(final Class<T> handlerClass) throws IOException, ServletException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new ServletException("Not supported");
 	}
 
 }
