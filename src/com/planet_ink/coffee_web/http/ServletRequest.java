@@ -43,7 +43,7 @@ import com.planet_ink.coffee_web.util.CWConfig;
 public class ServletRequest implements SimpleServletRequest
 {
 	private final HTTPRequest 			request;
-	private final CWConfig			config;
+	private final CWConfig				config;
 	private final SimpleServletSession  session;
 
 	/**
@@ -161,6 +161,12 @@ public class ServletRequest implements SimpleServletRequest
 	public Set<String> getCookieNames()
 	{
 		return request.getCookieNames();
+	}
+
+	@Override
+	public Enumeration<Cookie> getCookies()
+	{
+		return request.getCookies();
 	}
 
 	/**

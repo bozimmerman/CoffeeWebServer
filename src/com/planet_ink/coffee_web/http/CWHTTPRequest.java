@@ -81,7 +81,7 @@ public class CWHTTPRequest implements HTTPRequest
 	private String				 	uriPage	  		= null;		// portion of the request without urlparameters
 	private boolean				 	isFinished		= false;	// flag as to whether finishRequest and processing is ready
 	private List<long[]>		 	byteRanges		= null;		// if this is a ranged request, this will hold the ranges requested
-	private final Map<String,String>cookies	  		= new HashMap<String,String>(); // if cookies were received, they are mapped here
+	private final Map<String,Cookie>cookies	  		= new HashMap<String,Cookie>(); // if cookies were received, they are mapped here
 	private final InetAddress		address;					// the inet address of the request incoming
 	private List<MultiPartData>  	parts		 	= null;		// if this is multi-part request, this will have a list of the parts
 	private final boolean		 	isDebugging;				// optomization for the when not debug logging
@@ -829,10 +829,12 @@ public class CWHTTPRequest implements HTTPRequest
 		for(final String cookiePair : allCookies)
 		{
 			final String[] pairStrs = cookiePair.split("=",2);
+			String value;
 			if(pairStrs.length==2)
-				cookies.put(pairStrs[0].trim(),pairStrs[1]);
+				value = pairStrs[1];
 			else
-				cookies.put(pairStrs[0].trim(),"");
+				value = "";
+			cookies.put(pairStrs[0].trim(), new Cookie(pairStrs[0].trim(), value));
 		}
 	}
 
@@ -1125,7 +1127,17 @@ public class CWHTTPRequest implements HTTPRequest
 	@Override
 	public String getCookie(final String name)
 	{
-		return cookies.get(name);
+		return cookies.get(name).value;
+	}
+
+	/**
+	 * Gets the cookies
+	 *
+	 * @return the cookies
+	 */
+	public Enumeration<Cookie> getCookies()
+	{
+		return new Vector<Cookie>(cookies.values()).elements();
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -34,6 +35,8 @@ import com.planet_ink.coffee_common.collections.EmptyEnumeration;
 import com.planet_ink.coffee_common.collections.IteratorEnumeration;
 import com.planet_ink.coffee_web.http.HTTPHeader;
 import com.planet_ink.coffee_web.interfaces.SimpleServletRequest;
+import com.planet_ink.coffee_web.util.CWConfig;
+import com.planet_ink.coffee_web.util.CWThread;
 
 /*
 Copyright 2026-2026 Bo Zimmerman
@@ -53,10 +56,13 @@ limitations under the License.
 public class CWHttpServletRequest implements HttpServletRequest
 {
 
-	final Map<String,Object> attributes = new Hashtable<String, Object>();
-	final SimpleServletRequest req;
+	final Map<String, Object>	attributes	= new Hashtable<String, Object>();
+	final SimpleServletRequest	req;
+	final CWConfig				config;
+
 	public CWHttpServletRequest(final SimpleServletRequest req)
 	{
+		this.config = ((CWThread)Thread.currentThread()).getConfig();
 		this.req = req;
 	}
 
@@ -407,8 +413,10 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public Cookie[] getCookies()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final ArrayList<CWCookie> cookies = new ArrayList<CWCookie>();
+		for(final Enumeration<com.planet_ink.coffee_web.http.Cookie> c = req.getCookies();c.hasMoreElements();)
+			cookies.add(new CWCookie(c.nextElement()));
+		return cookies.toArray(new CWCookie[cookies.size()]);
 	}
 
 	@Override
@@ -424,12 +432,10 @@ public class CWHttpServletRequest implements HttpServletRequest
 		return req.getHeader(name);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Enumeration<String> getHeaders(final String name)
 	{
-		// TODO Auto-generated method stub
-		return EmptyEnumeration.instance;
+		return req.getHeaders();
 	}
 
 	@Override
@@ -489,7 +495,7 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getRemoteUser()
 	{
-		return null;
+		return this.req.getSession().getUser();
 	}
 
 	@Override
@@ -507,8 +513,7 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getRequestedSessionId()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return this.req.getSession().getSessionId();
 	}
 
 	@Override
@@ -535,49 +540,42 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public HttpSession getSession(final boolean create)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CWHttpSession(this.config,this.req.getSession());
 	}
 
 	@Override
 	public HttpSession getSession()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CWHttpSession(this.config,this.req.getSession());
 	}
 
 	@Override
 	public String changeSessionId()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return this.req.getSession().getSessionId();
 	}
 
 	@Override
 	public boolean isRequestedSessionIdValid()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isRequestedSessionIdFromCookie()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isRequestedSessionIdFromURL()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isRequestedSessionIdFromUrl()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
