@@ -1,13 +1,14 @@
 package com.planet_ink.coffee_web.j2ee;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.servlet.Filter;
@@ -22,6 +23,10 @@ import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
 
+import com.planet_ink.coffee_common.collections.IteratorEnumeration;
+import com.planet_ink.coffee_common.collections.Pair;
+import com.planet_ink.coffee_web.http.MIMEType;
+import com.planet_ink.coffee_web.interfaces.FileManager;
 import com.planet_ink.coffee_web.interfaces.SimpleServlet;
 import com.planet_ink.coffee_web.util.CWConfig;
 
@@ -42,13 +47,17 @@ limitations under the License.
 */
 public class CWServletContext implements ServletContext
 {
-	private final CWConfig config;
-	private final String path;
+	private final CWConfig				config;
+	private final String				path;
+	private final Map<String, Object>	attributes;
+	private volatile String				reqCharEnc = null;
+	private volatile String				respCharEnc = null;
 
 	public CWServletContext(final CWConfig config, final String path)
 	{
 		this.config=config;
 		this.path = path;
+		this.attributes = config.getServletMan().getServletContextVariables(path);
 	}
 
 	@Override
@@ -60,8 +69,7 @@ public class CWServletContext implements ServletContext
 	@Override
 	public ServletContext getContext(final String uripath)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CWServletContext(config, uripath);
 	}
 
 	@Override
@@ -118,21 +126,63 @@ public class CWServletContext implements ServletContext
 	@Override
 	public String getMimeType(final String file)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		if (file == null)
+			return null;
+		return MIMEType.All.getMIMEType(file).getType();
 	}
 
 	@Override
 	public Set<String> getResourcePaths(final String path)
 	{
-		// TODO Auto-generated method stub
+		if (path == null)
+			return null;
+		final Pair<String,String> mountPath = config.getMount("", -1, path);
+		if (mountPath != null)
+		{
+			String newFullPath = path.substring(mountPath.first.length());
+			if (newFullPath.startsWith("/") && mountPath.second.endsWith("/"))
+				newFullPath = newFullPath.substring(1);
+			final String realPath = mountPath.second + newFullPath;
+			final FileManager mgr = config.getFileManager();
+			final File dir = mgr.createFileFromPath(realPath.replace('/', mgr.getFileSeparator()));
+			if (dir == null || !dir.isDirectory())
+				return null;
+			final File[] files = dir.listFiles();
+			if (files == null)
+				return null;
+			final Set<String> paths = new java.util.HashSet<String>();
+			for (final File file : files)
+			{
+				String filePath = path;
+				if (!filePath.endsWith("/"))
+					filePath += "/";
+				filePath += file.getName();
+				if (file.isDirectory())
+					filePath += "/";
+				paths.add(filePath);
+			}
+			return paths;
+		}
 		return null;
 	}
 
 	@Override
 	public URL getResource(final String path) throws MalformedURLException
 	{
-		// TODO Auto-generated method stub
+		if (path == null)
+			return null;
+		final Pair<String,String> mountPath = config.getMount("", -1, path);
+		if (mountPath != null)
+		{
+			String newFullPath = path.substring(mountPath.first.length());
+			if (newFullPath.startsWith("/") && mountPath.second.endsWith("/"))
+				newFullPath = newFullPath.substring(1);
+			final String realPath = mountPath.second + newFullPath;
+			final FileManager mgr = config.getFileManager();
+			final File file = mgr.createFileFromPath(realPath.replace('/', mgr.getFileSeparator()));
+			if (file != null && file.exists())
+				return file.toURI().toURL();
+		}
 		return null;
 	}
 
@@ -152,14 +202,12 @@ public class CWServletContext implements ServletContext
 	@Override
 	public RequestDispatcher getRequestDispatcher(final String path)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public RequestDispatcher getNamedDispatcher(final String name)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -167,25 +215,48 @@ public class CWServletContext implements ServletContext
 	public Servlet getServlet(final String name) throws ServletException
 	{
 		final SimpleServlet servlet = config.getServletMan().findServlet(name);
-		if(servlet == null)
+		if (servlet == null)
 			return null;
-		// TODO Auto-generated method stub
+		if (servlet instanceof CWServlet)
+			return ((CWServlet)servlet).getInternalServlet();
 		return null;
 	}
 
 	@Override
 	public Enumeration<Servlet> getServlets()
 	{
-		//config.getServletMan().getServlets().iterator();
-		// TODO Auto-generated method stub
-		return null;
+		final java.util.List<Servlet> servlets = new java.util.ArrayList<Servlet>();
+		for (final SimpleServlet s : config.getServletMan().getServlets())
+		{
+			if (s instanceof CWServlet)
+			{
+				final Servlet servlet = ((CWServlet)s).getInternalServlet();
+				if (servlet != null)
+					servlets.add(servlet);
+			}
+		}
+		return new IteratorEnumeration<Servlet>(servlets.iterator());
 	}
 
 	@Override
 	public Enumeration<String> getServletNames()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final java.util.List<String> names = new java.util.ArrayList<String>();
+		for (final SimpleServlet s : config.getServletMan().getServlets())
+		{
+			if (s instanceof CWServlet)
+			{
+				final Servlet servlet = ((CWServlet)s).getInternalServlet();
+				if (servlet != null)
+				{
+					final String name = servlet.getServletConfig().getServletName();
+					if (name != null)
+						names.add(name);
+				}
+			}
+		}
+		return new IteratorEnumeration<String>(names.iterator());
+
 	}
 
 	@Override
@@ -209,30 +280,37 @@ public class CWServletContext implements ServletContext
 	@Override
 	public String getRealPath(final String path)
 	{
-		// TODO Auto-generated method stub
+		if (path == null)
+			return null;
+		final Pair<String,String> mountPath = config.getMount("", -1, path);
+		if (mountPath != null)
+		{
+			String newFullPath = path.substring(mountPath.first.length());
+			if (newFullPath.startsWith("/") && mountPath.second.endsWith("/"))
+				newFullPath = newFullPath.substring(1);
+			final String realPath = mountPath.second + newFullPath;
+			final FileManager mgr = config.getFileManager();
+			return realPath.replace('/', mgr.getFileSeparator());
+		}
 		return null;
 	}
 
 	@Override
 	public String getServerInfo()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "CoffeeWebServer/" + config.getCoffeeWebServer().getVersion();
 	}
 
 	@Override
 	public String getInitParameter(final String name)
 	{
-		return config.getMiscProp(name);
+		return config.getServletMan().getServletInitVariables(path).get(name);
 	}
 
 	@Override
 	public Enumeration<String> getInitParameterNames()
 	{
-		final Vector<String> v = new Vector<String>();
-		for(final Enumeration<Object> e = config.getINIFile().keys();e.hasMoreElements();)
-			v.add(e.toString());
-		return v.elements();
+		return new IteratorEnumeration<String>(config.getServletMan().getServletInitVariables(path).keySet().iterator());
 	}
 
 	@Override
@@ -245,36 +323,37 @@ public class CWServletContext implements ServletContext
 	@Override
 	public Object getAttribute(final String name)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return attributes.get(name);
 	}
 
 	@Override
 	public Enumeration<String> getAttributeNames()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new IteratorEnumeration<String>(attributes.keySet().iterator());
 	}
 
 	@Override
 	public void setAttribute(final String name, final Object object)
 	{
-		// TODO Auto-generated method stub
-
+		attributes.put(name, object);
 	}
 
 	@Override
 	public void removeAttribute(final String name)
 	{
-		// TODO Auto-generated method stub
-
+		attributes.remove(name);
 	}
 
 	@Override
 	public String getServletContextName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		if (path != null && path.length() > 0)
+		{
+			if (path.startsWith("/"))
+				return path.substring(1);
+			return path;
+		}
+		return "CoffeeWebServer";
 	}
 
 	@Override
@@ -304,22 +383,31 @@ public class CWServletContext implements ServletContext
 	@Override
 	public <T extends Servlet> T createServlet(final Class<T> clazz) throws ServletException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			return clazz.getDeclaredConstructor().newInstance();
+		}
+		catch (final Exception e)
+		{
+			throw new ServletException("Unable to create servlet instance", e);
+		}
 	}
 
 	@Override
 	public ServletRegistration getServletRegistration(final String servletName)
 	{
-		// TODO Auto-generated method stub
+		if(config.getServletMan().findServlet(servletName) != null)
+			return new CWServletRegistration(config, servletName);
 		return null;
 	}
 
 	@Override
 	public Map<String, ? extends ServletRegistration> getServletRegistrations()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final Map<String, ServletRegistration> regs = new Hashtable<String, ServletRegistration>();
+		for(final String name : config.getServletMan().getServletPaths())
+			regs.put(name, new CWServletRegistration(config, name));
+		return regs;
 	}
 
 	@Override
@@ -361,63 +449,60 @@ public class CWServletContext implements ServletContext
 	@Override
 	public SessionCookieConfig getSessionCookieConfig()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setSessionTrackingModes(final Set<SessionTrackingMode> sessionTrackingModes)
 	{
-		// TODO Auto-generated method stub
-
+		// dp what now?
 	}
 
 	@Override
 	public Set<SessionTrackingMode> getDefaultSessionTrackingModes()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final Set<SessionTrackingMode> modes = new java.util.HashSet<SessionTrackingMode>();
+		modes.add(SessionTrackingMode.COOKIE);
+		return modes;
 	}
 
 	@Override
 	public Set<SessionTrackingMode> getEffectiveSessionTrackingModes()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return getDefaultSessionTrackingModes();
 	}
 
 	@Override
 	public void addListener(final String className)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public <T extends EventListener> void addListener(final T t)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void addListener(final Class<? extends EventListener> listenerClass)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public <T extends EventListener> T createListener(final Class<T> clazz) throws ServletException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			return clazz.getDeclaredConstructor().newInstance();
+		}
+		catch (final Exception e)
+		{
+			throw new ServletException("Unable to create listener instance", e);
+		}
 	}
 
 	@Override
 	public JspConfigDescriptor getJspConfigDescriptor()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -430,14 +515,11 @@ public class CWServletContext implements ServletContext
 	@Override
 	public void declareRoles(final String... roleNames)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public String getVirtualServerName()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -450,35 +532,29 @@ public class CWServletContext implements ServletContext
 	@Override
 	public void setSessionTimeout(final int sessionTimeout)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public String getRequestCharacterEncoding()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return reqCharEnc;
 	}
 
 	@Override
 	public void setRequestCharacterEncoding(final String encoding)
 	{
-		// TODO Auto-generated method stub
-
+		reqCharEnc = encoding;
 	}
 
 	@Override
 	public String getResponseCharacterEncoding()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return respCharEnc;
 	}
 
 	@Override
 	public void setResponseCharacterEncoding(final String encoding)
 	{
-		// TODO Auto-generated method stub
-
+		respCharEnc = encoding;
 	}
 }

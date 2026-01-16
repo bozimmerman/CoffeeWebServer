@@ -42,6 +42,11 @@ public class CWServlet implements SimpleServlet
 		this.servlet = servlet;
 	}
 
+	public Servlet getInternalServlet()
+	{
+		return this.servlet;
+	}
+
 	@Override
 	public void init()
 	{

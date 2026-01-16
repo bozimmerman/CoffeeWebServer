@@ -6,7 +6,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import com.planet_ink.coffee_common.collections.EmptyEnumeration;
+import com.planet_ink.coffee_common.collections.IteratorEnumeration;
 import com.planet_ink.coffee_web.util.CWConfig;
 
 /*
@@ -52,14 +52,13 @@ public class CWServletConfig implements ServletConfig
 	@Override
 	public String getInitParameter(final String name)
 	{
-		return null;
+		return config.getServletMan().getServletInitVariables(path).get(name);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Enumeration<String> getInitParameterNames()
 	{
-		return EmptyEnumeration.instance;
+		return new IteratorEnumeration<String>(config.getServletMan().getServletInitVariables(path).keySet().iterator());
 	}
 
 }

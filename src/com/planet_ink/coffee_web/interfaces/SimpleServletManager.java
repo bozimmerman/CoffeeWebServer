@@ -1,6 +1,7 @@
 package com.planet_ink.coffee_web.interfaces;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.planet_ink.coffee_web.util.RequestStats;
 
@@ -44,6 +45,13 @@ public interface SimpleServletManager
 	public Collection<SimpleServlet> getServlets();
 
 	/**
+	 * For anyone externally interested, will return the list of servlet
+	 * paths that are registered
+	 * @return the list of servlet paths
+	 */
+	public Collection<String> getServletPaths();
+
+	/**
 	 * Returns a servlet (if any) that handles the given uri context.
 	 * if none is found, NULL is returned.
 	 * @param rootContext the uri context
@@ -58,5 +66,23 @@ public interface SimpleServletManager
 	 * @return the servlet stats object
 	 */
 	public RequestStats getServletStats(SimpleServlet servlet);
+
+	/**
+	 * Returns the context variables for the given servlet, which persist
+	 * across requests, but not across server boots.
+	 *
+	 * @param rootContext the servlet context
+	 * @return the variables map
+	 */
+	public Map<String, Object> getServletContextVariables(final String rootContext);
+
+	/**
+	 * Returns the initialization variables for the given servlet, which persist
+	 * across requests, but not across server boots.
+	 *
+	 * @param rootContext the servlet context
+	 * @return the variables map
+	 */
+	public Map<String, String> getServletInitVariables(final String rootContext);
 
 }

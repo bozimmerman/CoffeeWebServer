@@ -36,9 +36,11 @@ import com.planet_ink.coffee_web.util.RequestStats;
  */
 public class ServletManager implements SimpleServletManager
 {
-	private final Map<String, SimpleServlet>		servlets;		// map of registered servlets by context
-	private final Map<String, Class<?>>				servletClasses;	// map of registered servlets by context
-	private final Map<SimpleServlet, RequestStats>	servletStats;	// stats about each servlet
+	private final Map<String, SimpleServlet>				servlets;		// map of registered servlets by context
+	private final Map<String, Class<?>>						servletClasses;	// map of registered servlets by context
+	private final Map<SimpleServlet, RequestStats>			servletStats;	// stats about each servlet
+	private final Map<SimpleServlet, Map<String, Object>>	servletAttribs;	// attributes for each servlet
+	private final Map<SimpleServlet, Map<String, String>>	servletInis;	// ini entries for each servlet
 	private final CWConfig config;
 
 	public ServletManager(final CWConfig config)
@@ -47,6 +49,8 @@ public class ServletManager implements SimpleServletManager
 		servlets = new Hashtable<String,SimpleServlet>();
 		servletStats = new Hashtable<SimpleServlet, RequestStats>();
 		servletClasses = new Hashtable<String, Class<?>>();
+		servletAttribs = new Hashtable<SimpleServlet, Map<String, Object>>();
+		servletInis = new Hashtable<SimpleServlet, Map<String, String>>();
 
 		for(final String context : config.getServletClasses().keySet())
 		{
@@ -97,6 +101,17 @@ public class ServletManager implements SimpleServletManager
 	public Collection<SimpleServlet> getServlets()
 	{
 		return servlets.values();
+	}
+
+	/**
+	 * For anyone externally interested, will return the list of servlet
+	 * paths that are registered
+	 * @return the list of servlet paths
+	 */
+	@Override
+	public Collection<String> getServletPaths()
+	{
+		return servletClasses.keySet();
 	}
 
 	/**
@@ -185,5 +200,36 @@ public class ServletManager implements SimpleServletManager
 	public RequestStats getServletStats(final SimpleServlet servlet)
 	{
 		return servletStats.get(servlet);
+	}
+
+
+	/**
+	 * Returns the context variables for the given servlet, which persist
+	 * across requests, but not across server boots.
+	 *
+	 * @param rootContext the servlet context
+	 * @return the variables map
+	 */
+	@Override
+	public Map<String, Object> getServletContextVariables(final String rootContext)
+	{
+		final SimpleServlet servlet = this.findServlet(rootContext);
+		if(servlet == null)
+			return new Hashtable<String, Object>();
+		if(!this.servletAttribs.containsKey(servlet))
+			this.servletAttribs.put(servlet, new Hashtable<String, Object>());
+		return this.servletAttribs.get(servlet);
+	}
+
+
+	@Override
+	public Map<String, String> getServletInitVariables(final String rootContext)
+	{
+		final SimpleServlet servlet = this.findServlet(rootContext);
+		if(servlet == null)
+			return new Hashtable<String, String>();
+		if(!this.servletInis.containsKey(servlet))
+			this.servletInis.put(servlet, new Hashtable<String, String>());
+		return this.servletInis.get(servlet);
 	}
 }

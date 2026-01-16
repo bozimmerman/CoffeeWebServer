@@ -141,8 +141,7 @@ public class CWHttpSession implements HttpSession
 	@Override
 	public boolean isNew()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return sess.getSessionLastTouchTime() - sess.getSessionStart().getTime() < 100;
 	}
 
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.planet_ink.coffee_web.tests;
 
@@ -26,14 +26,14 @@ public class UtilTests
 {
 
 	private final static Random random=new Random(System.currentTimeMillis());
-	
-	
+
+
 	@Test
 	public void testExecutor()
 	{
-		CWConfig config=new CWConfig();
+		final CWConfig config=new CWConfig();
 		config.setLogger(Log.instance());
-		CWThreadExecutor executor = new CWThreadExecutor("test", config, 1, 10, 1000, TimeUnit.SECONDS, 10, 500);
+		final CWThreadExecutor executor = new CWThreadExecutor("test", config, 1, 10, 1000, TimeUnit.SECONDS, 10, 500);
 		final LinkedList<Integer> todo=new LinkedList<Integer>();
 		int total=0;
 		final int numObjects=500;
@@ -51,15 +51,15 @@ public class UtilTests
 				public void run()
 				{
 					if(random.nextInt(10)>5)
-						try{Thread.sleep(random.nextInt(10));}catch(Exception e){}
+						try{Thread.sleep(random.nextInt(10));}catch(final Exception e){}
 					todone.add(myObject);
 				}
 			});
 		}
 		while(executor.getQueue().size()>0)
-			try{Thread.sleep(100);}catch(Exception e){}
+			try{Thread.sleep(100);}catch(final Exception e){}
 		int total2=0;
-		for(Integer i : todone)
+		for(final Integer i : todone)
 			total2+=i.intValue();
 		if((total != total2)||(todone.size()!=numObjects))
 			fail("FAIL, "+total+"!="+total2+", returned="+todone.size());
@@ -70,11 +70,11 @@ public class UtilTests
 	@Test
 	public void requestStatsTester()
 	{
-		CWConfig config=new CWConfig();
+		final CWConfig config=new CWConfig();
 		config.setLogger(Log.instance());
-		CWThreadExecutor executor = new CWThreadExecutor("test", config, 1, 5, 100, TimeUnit.SECONDS, 10, 500);
+		final CWThreadExecutor executor = new CWThreadExecutor("test", config, 1, 5, 100, TimeUnit.SECONDS, 10, 500);
 		final RequestStats stats = new RequestStats();
-		int numRequests=500;
+		final int numRequests=500;
 		for(int i=0;i<numRequests;i++)
 		{
 			executor.execute(new Runnable(){
@@ -85,7 +85,7 @@ public class UtilTests
 					try
 					{
 						stats.startProcessing();
-						try{Thread.sleep(random.nextInt(10));}catch(Exception e){}
+						try{Thread.sleep(random.nextInt(10));}catch(final Exception e){}
 					}
 					finally
 					{
@@ -107,9 +107,8 @@ public class UtilTests
 			{
 				Thread.sleep(1);
 			}
-			catch (InterruptedException e1)
+			catch (final InterruptedException e1)
 			{
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
@@ -118,8 +117,8 @@ public class UtilTests
 			fail("FAIL, nothing is in progress: "+stats.getAverageEllapsedNanos()+"/"+stats.getNumberOfRequestsInProcess());
 		}
 		while(executor.getQueue().size()>0)
-			try{Thread.sleep(100);}catch(Exception e){}
-		try{Thread.sleep(1000);}catch(Exception e){}
+			try{Thread.sleep(100);}catch(final Exception e){}
+		try{Thread.sleep(1000);}catch(final Exception e){}
 		if((stats.getAverageEllapsedNanos()==0)
 		||(stats.getNumberOfRequests()!=numRequests))
 		{
