@@ -105,6 +105,7 @@ public interface HTTPHeader
 		CACHE_CONTROL("Cache-Control"),
 		CONNECTION("Connection"),
 		CONTENT_DISPOSITION("Content-Disposition"),
+		CONTENT_LANGUAGE("Content-Language"),
 		CONTENT_ENCODING("Content-Encoding"),
 		CONTENT_LENGTH("Content-Length"),
 		CONTENT_RANGE("Content-Range"),

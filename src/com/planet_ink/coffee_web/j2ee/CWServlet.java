@@ -72,7 +72,7 @@ public class CWServlet implements SimpleServlet
 			throws HTTPException
 	{
 		final ServletRequest i2eeReq = new CWHttpServletRequest(this.path,request);
-		final ServletResponse i2eeResp = null; //TODO: new CWHttpServletResponse(response);
+		final ServletResponse i2eeResp = new CWHttpServletResponse(response);
 		try
 		{
 			servlet.service(i2eeReq, i2eeResp);
