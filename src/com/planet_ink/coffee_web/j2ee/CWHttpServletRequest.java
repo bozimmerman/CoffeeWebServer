@@ -469,7 +469,6 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public int getIntHeader(final String name)
 	{
-
 		try
 		{
 			return Integer.parseInt(getHeader(name));
@@ -548,15 +547,19 @@ public class CWHttpServletRequest implements HttpServletRequest
 	@Override
 	public StringBuffer getRequestURL()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final String r = req.getFullRequest();
+		final int x = r.indexOf('?');
+		if(x < 0)
+			return new StringBuffer(r);
+		return new StringBuffer(r.substring(0,x));
 	}
 
 	@Override
 	public String getServletPath()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		if(!path.startsWith("/"))
+			return "/"+path;
+		return path;
 	}
 
 	@Override
