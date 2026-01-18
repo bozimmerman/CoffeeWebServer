@@ -152,7 +152,7 @@ public class ServletManager implements SimpleServletManager
 				return c;
 			final Class<?> ssClass = this.servletClasses.get(rootContext);
 			if(ssClass == null)
-				config.getLogger().log(Level.SEVERE, "Servlet class not found for "+rootContext);
+				return null;
 			try
 			{
 				final Object o = ssClass.getDeclaredConstructor().newInstance();
