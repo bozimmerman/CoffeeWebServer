@@ -350,10 +350,8 @@ public class CWHTTPRequest implements HTTPRequest
 		final ByteBuffer previousBuffer = buffer;
 		if(chunkSize == 0)
 			chunkSize = (int)requestLineSize ; // enough to hold chunk length bits and maybe headers?
-		if(this.buffer.capacity() >= previousBuffer.remaining() + chunkSize)
-		{
+		if(this.buffer.capacity() >= (previousBuffer.remaining() + chunkSize))
 			this.buffer.compact();
-		}
 		else
 		{
 			this.buffer=ByteBuffer.allocate(previousBuffer.remaining() + chunkSize); // enough to hold chunk
@@ -483,7 +481,6 @@ public class CWHTTPRequest implements HTTPRequest
 			if(encDefParts.length==1)
 				encs.put(encDefParts[0].trim().toLowerCase(),Double.valueOf(1.0));
 			else
-			{
 				try
 				{
 					final int eqDex=encDefParts[1].indexOf('=');
@@ -498,7 +495,6 @@ public class CWHTTPRequest implements HTTPRequest
 				{
 					// just ignore this
 				}
-			}
 		}
 		if(encs.size() > 0)
 			return encs;
@@ -534,9 +530,7 @@ public class CWHTTPRequest implements HTTPRequest
 			{
 				long[] rangeSetAZ;
 				if(rangeAZSetStrs.length==1)
-				{
 					rangeSetAZ= new long[1];
-				}
 				else
 				{
 					rangeSetAZ= new long[2];
@@ -643,9 +637,7 @@ public class CWHTTPRequest implements HTTPRequest
 					stateIndex=i+1;
 					state=BoundaryState.HEADER;
 					if(headerLine.length()==0)
-					{
 						state=BoundaryState.BODY;
-					}
 					else
 					{
 						final String[] headerParts=headerLine.split(":",2);
@@ -712,11 +704,8 @@ public class CWHTTPRequest implements HTTPRequest
 							while(urlParmsFound.containsKey(key+x))
 								x++;
 							urlParmsFound.put(key+x, value);
-						}
-						else
-						{
+						} else
 							urlParmsFound.put(key, value);
-						}
 						allParts.remove(currentPart);
 					}
 					else
@@ -785,9 +774,7 @@ public class CWHTTPRequest implements HTTPRequest
 
 		// if no body was sent, there is nothing left to do, at ALL
 		if(bodyLength == 0)
-		{
 			bodyStream = emptyInput;
-		}
 		else // if this entire body is one url-encoded string, parse it into the urlParameters and clear the body
 		{
 			bodyStream = new ByteArrayInputStream(buffer.array());
@@ -872,9 +859,7 @@ public class CWHTTPRequest implements HTTPRequest
 			final String headerValue = headerLine.substring(x+1).trim();
 			HTTPHeader header = HTTPHeader.Common.find(headerKey);
 			if(header == null)
-			{
 				header = HTTPHeader.Common.createNew(headerKey);
-			}
 			headers.put(header , headerValue);
 			return header;
 		}
@@ -928,15 +913,11 @@ public class CWHTTPRequest implements HTTPRequest
 	private void addUrlParameter(final String name, final String value)
 	{
 		if(urlParameters == null)
-		{
 			synchronized(this)
 			{
 				if(urlParameters == null)
-				{
 					urlParameters = new Hashtable<String,String>();
-				}
 			}
-		}
 		urlParameters.put(name.toLowerCase().trim(), value);
 	}
 
@@ -974,11 +955,8 @@ public class CWHTTPRequest implements HTTPRequest
 					while(urlParmsFound.containsKey(key+x))
 						x++;
 					urlParmsFound.put(key+x, value);
-				}
-				else
-				{
+				} else
 					urlParmsFound.put(key, value);
-				}
 			}
 			for(final String key : urlParmsFound.keySet())
 				addUrlParameter(key,urlParmsFound.get(key));
@@ -1115,6 +1093,7 @@ public class CWHTTPRequest implements HTTPRequest
 	 *
 	 * @return The header names
 	 */
+	@Override
 	public Enumeration<String> getHeaders()
 	{
 		return new IteratorEnumeration<String>(headers.keySet().iterator());
@@ -1127,6 +1106,8 @@ public class CWHTTPRequest implements HTTPRequest
 	@Override
 	public String getCookie(final String name)
 	{
+		if(!cookies.containsKey(name))
+			return null;
 		return cookies.get(name).value;
 	}
 
@@ -1135,6 +1116,7 @@ public class CWHTTPRequest implements HTTPRequest
 	 *
 	 * @return the cookies
 	 */
+	@Override
 	public Enumeration<Cookie> getCookies()
 	{
 		return new Vector<Cookie>(cookies.values()).elements();
