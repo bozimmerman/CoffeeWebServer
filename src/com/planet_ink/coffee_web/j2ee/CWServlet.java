@@ -63,13 +63,11 @@ public class CWServlet implements SimpleServlet
 	@Override
 	public void doGet(final SimpleServletRequest request, final SimpleServletResponse response) throws HTTPException
 	{
-		service(HTTPMethod.GET, request, response);
 	}
 
 	@Override
 	public void doPost(final SimpleServletRequest request, final SimpleServletResponse response) throws HTTPException
 	{
-		service(HTTPMethod.POST, request, response);
 	}
 
 	@Override
