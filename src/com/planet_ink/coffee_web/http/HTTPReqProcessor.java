@@ -106,8 +106,10 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		final double nonzipPreference = request.getSpecialEncodingAcceptability("*");
 
 		if((deflatePreference==0.0) && (gzipPreference==0.0))
+		{
 			// assume servlet or someone else will encode it properly
 			return buffers;
+		}
 		if((nonzipPreference > deflatePreference) && (nonzipPreference > gzipPreference))
 			return buffers;
 
@@ -223,11 +225,14 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			str.append(header.makeLine(headers.get(header)));
 		if((!headers.containsKey(HTTPHeader.Common.TRANSFER_ENCODING))
 		||(!headers.get(HTTPHeader.Common.TRANSFER_ENCODING).equals("chunked")))
+		{
 			if(response != null)
 				str.append(HTTPHeader.Common.CONTENT_LENGTH.makeLine(response.getLength()));
 			else
 				str.append(HTTPHeader.Common.CONTENT_LENGTH.makeLine(0));
+		}
 		if(response != null)
+		{
 			try
 			{
 				str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine(HTTPIOHandler.DATE_FORMAT.format(response.getLastModified())));
@@ -243,6 +248,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 					str.append(HTTPHeader.Common.LAST_MODIFIED.makeLine("THU, 01 JAN 1970 00:00:00 000"));
 				}
 			}
+		}
 		if(config.isDebugging())
 			config.getLogger().finer("Response: "+str.toString().replace('\r', ' ').replace('\n', ' '));
 		str.append(HTTPIOHandler.SERVER_HEADER);
@@ -306,11 +312,13 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			final String[] mimeMasks = mimeMaskStr.split(",");
 			boolean matchedOne=false;
 			for(final String mimeMask : mimeMasks)
+			{
 				if(mimeType.matches(mimeMask))
 				{
 					matchedOne=true;
 					break;
 				}
+			}
 			if(!matchedOne)
 				throw HTTPException.standardException(HTTPStatus.S406_NOT_ACCEPTABLE);
 		}
@@ -422,7 +430,8 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		{
 			session = config.getSessions().createSession(request);
 			servletResponse.setCookie(new Cookie("cwsessid", session.getSessionId()));
-		} else
+		}
+		else
 			session = config.getSessions().findOrCreateSession(oldSessionID);
 		return session;
 	}
@@ -487,6 +496,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 	{
 		final String lastModifiedSince=request.getHeader(HTTPHeader.Common.IF_MODIFIED_SINCE.lowerCaseName());
 		if(lastModifiedSince != null)
+		{
 			try
 			{
 				final long sinceDate = Math.round(Math.floor((HTTPIOHandler.DATE_FORMAT.parse(lastModifiedSince.trim()).getTime())/1000.0))*1000;
@@ -503,6 +513,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			catch (final ArrayIndexOutOfBoundsException e)
 			{
 			}
+		}
 	}
 
 	/**
@@ -550,13 +561,17 @@ public class HTTPReqProcessor implements HTTPFileGetter
 			cgiFile = createFile(request, cgiLocalExePath);
 			if((!cgiFile.exists())||(cgiFile.isDirectory()))
 				throw HTTPException.standardException(HTTPStatus.S404_NOT_FOUND);
-		} else if(nextSlash>0)
-		{
-			cgiMountPath = remainderSubPath.substring(0,nextSlash);
-			remainderSubPath = remainderSubPath.substring(nextSlash);
 		}
 		else
-			remainderSubPath="";
+		{
+			if(nextSlash>0)
+			{
+				cgiMountPath = remainderSubPath.substring(0,nextSlash);
+				remainderSubPath = remainderSubPath.substring(nextSlash);
+			}
+			else
+				remainderSubPath="";
+		}
 		final String cgiExecPath = cgiFile.getAbsolutePath();
 		final String cgiRootStr = cgiFile.getParentFile().getAbsolutePath();
 		final CGIProcessor cgiProcessor = new CGIProcessor(cgiExecPath, cgiRootStr, cgiMountPath, remainderSubPath);
@@ -598,8 +613,10 @@ public class HTTPReqProcessor implements HTTPFileGetter
 		final File pathFile = createFile(request, reqPath);
 		final File pageFile;
 		if(pathFile.isDirectory())
+		{
 			pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
 			//TODO: check this: throw HTTPException.standardException(HTTPStatus.S500_INTERNAL_ERROR);
+		}
 		else
 			pageFile = pathFile;
 
@@ -623,7 +640,8 @@ public class HTTPReqProcessor implements HTTPFileGetter
 				{
 				}
 				return buffers;
-			} else
+			}
+			else
 				return config.getFileCache().getFileData(pageFile, null);
 		}
 		catch(final HTTPException e)
@@ -677,7 +695,8 @@ public class HTTPReqProcessor implements HTTPFileGetter
 						throw movedException;
 					}
 					pageFile=config.getFileManager().createFileFromPath(config.getBrowsePage());
-				} else
+				}
+				else
 					pageFile = pathFile;
 				buffers = new CWDataBuffers(); // before forming output, process range request
 				switch(request.getMethod())
@@ -702,6 +721,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 							extraHeaders.put(HTTPHeader.Common.CACHE_CONTROL, "no-cache");
 							final long dateTime=System.currentTimeMillis();
 							if(dateTime >= 0)
+							{
 								try
 								{
 									extraHeaders.put(HTTPHeader.Common.EXPIRES, HTTPIOHandler.DATE_FORMAT.format(Long.valueOf(dateTime)));
@@ -711,6 +731,7 @@ public class HTTPReqProcessor implements HTTPFileGetter
 									Log.errOut("ArrayIndexOutOfBoundsException (format failed): DateTime was "+dateTime);
 									extraHeaders.put(HTTPHeader.Common.EXPIRES, "MON, 01 Jan 1970 01:00:00 000");
 								}
+							}
 							final HTTPResponse requestResponse = new HTTPReqResponse();
 							buffers=new CWDataBuffers(converter.convertOutput(config, request, pathFile, requestResponse, buffers.flushToBuffer()), dateTime, true);
 							extraHeaders.putAll(requestResponse.getPopulatedHeaders());

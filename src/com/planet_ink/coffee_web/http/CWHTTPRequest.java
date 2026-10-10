@@ -481,6 +481,7 @@ public class CWHTTPRequest implements HTTPRequest
 			if(encDefParts.length==1)
 				encs.put(encDefParts[0].trim().toLowerCase(),Double.valueOf(1.0));
 			else
+			{
 				try
 				{
 					final int eqDex=encDefParts[1].indexOf('=');
@@ -495,6 +496,7 @@ public class CWHTTPRequest implements HTTPRequest
 				{
 					// just ignore this
 				}
+			}
 		}
 		if(encs.size() > 0)
 			return encs;
@@ -704,7 +706,8 @@ public class CWHTTPRequest implements HTTPRequest
 							while(urlParmsFound.containsKey(key+x))
 								x++;
 							urlParmsFound.put(key+x, value);
-						} else
+						}
+						else
 							urlParmsFound.put(key, value);
 						allParts.remove(currentPart);
 					}
@@ -913,11 +916,13 @@ public class CWHTTPRequest implements HTTPRequest
 	private void addUrlParameter(final String name, final String value)
 	{
 		if(urlParameters == null)
+		{
 			synchronized(this)
 			{
 				if(urlParameters == null)
 					urlParameters = new Hashtable<String,String>();
 			}
+		}
 		urlParameters.put(name.toLowerCase().trim(), value);
 	}
 
@@ -955,7 +960,8 @@ public class CWHTTPRequest implements HTTPRequest
 					while(urlParmsFound.containsKey(key+x))
 						x++;
 					urlParmsFound.put(key+x, value);
-				} else
+				}
+				else
 					urlParmsFound.put(key, value);
 			}
 			for(final String key : urlParmsFound.keySet())

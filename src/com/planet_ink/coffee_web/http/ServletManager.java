@@ -160,6 +160,7 @@ public class ServletManager implements SimpleServletManager
 					c = (SimpleServlet)o;
 				else
 				if(isJavaxServlet(o.getClass()))
+				{
 					try
 					{
 						final Class<?> javaxServletClass = Class.forName("javax.servlet.Servlet");
@@ -172,6 +173,7 @@ public class ServletManager implements SimpleServletManager
 						config.getLogger().log(Level.SEVERE, "No valid servlet found for "+rootContext, e);
 						return null;
 					}
+				}
 				else
 					c = null;
 				if(c == null)
