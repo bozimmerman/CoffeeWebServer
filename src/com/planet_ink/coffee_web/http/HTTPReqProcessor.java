@@ -29,7 +29,7 @@ import com.planet_ink.coffee_common.collections.Pair;
 import com.planet_ink.coffee_common.logging.Log;
 
 /*
-   Copyright 2012-2025 Bo Zimmerman
+   Copyright 2012-2026 Bo Zimmerman
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
